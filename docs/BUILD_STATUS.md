@@ -11,7 +11,7 @@
 | Aegis Deployment Clearance v0.1 | COMPLETADO | PR #11 |
 | Orbyn Atlas Case + Briefing v0.1 | COMPLETADO | PR #12 |
 | Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
-| OAAA Agent Blueprint v0.1 | EN REVISIÓN | PR #14 |
+| OAAA Agent Blueprint v0.1 | COMPLETADO | PR #14 |
 | ARIA Test Register | PENDIENTE | Issue #6 |
 | Vigilance Permissions Layer | PENDIENTE | Issue #7 |
 
