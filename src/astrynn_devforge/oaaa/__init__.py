@@ -1,4 +1,5 @@
 from .enums import ARIATestFamily, AutonomyLevel, BlueprintStatus, HumanDecision
+from .governed_service import OAAAAgentBlueprintService
 from .models import (
     ARIATestRequirement,
     ActivationReceipt,
@@ -16,7 +17,6 @@ from .repository import (
 from .service import (
     BlueprintApprovalError,
     BlueprintTransitionError,
-    OAAAAgentBlueprintService,
     StaleClearanceError,
 )
 
