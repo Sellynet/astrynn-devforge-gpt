@@ -13,7 +13,7 @@
 | Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
 | OAAA Agent Blueprint v0.1 | COMPLETADO | PR #14 |
 | ARIA Test Register v0.1 | COMPLETADO | PR #16 |
-| Vigilance Permissions Layer v0.1 | EN REVISIÓN | PR #17 |
+| Vigilance Permissions Layer v0.1 | COMPLETADO | PR #17 |
 
 ## Cómo comprobar el trabajo desde el móvil
 
