@@ -13,7 +13,7 @@
 | Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
 | OAAA Agent Blueprint v0.1 | COMPLETADO | PR #14 |
 | ARIA Test Register v0.1 | COMPLETADO | PR #16 |
-| Vigilance Permissions Layer | PENDIENTE | Issue #7 |
+| Vigilance Permissions Layer v0.1 | EN REVISIÓN | PR #17 |
 
 ## Cómo comprobar el trabajo desde el móvil
 
@@ -26,6 +26,7 @@
 7. Abrir `examples/atlas_demo.py` para ver un caso sintético completo de Atlas.
 8. Abrir `examples/output_vault_demo.py` para ver versionado, decisión y Proof Receipt.
 9. Abrir `examples/oaaa_blueprint_demo.py` para ver OAAA, ARIA y activación gobernada.
+10. Abrir `examples/vigilance_demo.py` para ver permisos, approval gates y emergency disable.
 
 ## Regla de lectura
 
@@ -33,4 +34,5 @@
 - **Closed issue** significa criterio de aceptación completado.
 - **Green Actions run** significa que lint y tests automáticos pasaron.
 - `ACTIVE` en OAAA es un estado de gobierno, no un despliegue de software.
+- `ALLOWED` en Vigilance es una autorización registrada, no una ejecución externa.
 - Ningún módulo se considera producto desplegado hasta que exista aplicación, persistencia y entorno de piloto aprobados.
