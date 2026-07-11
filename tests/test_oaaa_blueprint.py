@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -170,6 +171,18 @@ def submit_and_clear(service, draft, owner_id, decision=ClearanceDecision.APTO):
     return submitted, clearance, cleared
 
 
+def passing_aria_receipt(blueprint):
+    return SimpleNamespace(
+        id=uuid4(),
+        blueprint_id=blueprint.blueprint_id,
+        blueprint_version_id=blueprint.id,
+        blueprint_fingerprint=blueprint.safety_fingerprint,
+        verdict="PASS",
+        unresolved_critical_findings=0,
+        receipt_hash="a" * 64,
+    )
+
+
 def test_blueprint_starts_as_draft_and_is_versioned_in_vault() -> None:
     service, kernel_repo, blueprint_repo, vault_repo, case, owner_id, org_id = build_system()
     draft = create_draft(service, case, owner_id, org_id)
@@ -247,7 +260,26 @@ def test_no_apto_clearance_blocks_the_blueprint() -> None:
     assert blocked.clearance_decision == ClearanceDecision.NO_APTO_TODAVIA
 
 
-def test_happy_path_records_vault_receipt_without_runtime_deployment() -> None:
+def test_approved_blueprint_requires_aria_receipt_before_activation() -> None:
+    service, _, _, _, case, owner_id, org_id = build_system()
+    draft = create_draft(service, case, owner_id, org_id)
+    _, _, cleared = submit_and_clear(service, draft, owner_id)
+    approved, _ = service.record_human_approval(
+        blueprint_id=cleared.blueprint_id,
+        approver_id=owner_id,
+        decision=HumanDecision.APPROVE,
+        rationale="Scope and permissions are explicit",
+    )
+
+    with pytest.raises(BlueprintApprovalError, match="ARIA Receipt"):
+        service.activate(
+            blueprint_id=approved.blueprint_id,
+            activated_by=owner_id,
+            activation_note="Attempt without ARIA evidence",
+        )
+
+
+def test_happy_path_records_vault_and_aria_links_without_runtime_deployment() -> None:
     (
         service,
         kernel_repo,
@@ -265,10 +297,12 @@ def test_happy_path_records_vault_receipt_without_runtime_deployment() -> None:
         decision=HumanDecision.APPROVE,
         rationale="Scope, permissions, tests and rollback are explicit",
     )
+    aria_receipt = passing_aria_receipt(approved)
     active, receipt = service.activate(
         blueprint_id=approved.blueprint_id,
         activated_by=owner_id,
         activation_note="Enable governance state for controlled sandbox use only",
+        aria_receipt=aria_receipt,
     )
 
     assert clearance.id == active.clearance_result_id
@@ -277,6 +311,10 @@ def test_happy_path_records_vault_receipt_without_runtime_deployment() -> None:
     assert len(receipt.receipt_hash) == 64
     assert len(vault_repo.receipts_for_artifact(active.vault_artifact_id)) == 1
     assert len(blueprint_repo.activation_receipts_for_blueprint(active.blueprint_id)) == 1
+    artifact_types = {
+        item.artifact_type for item in kernel_repo.outputs_for_case(case.id)
+    }
+    assert "OAAA_ARIA_ACTIVATION_LINK" in artifact_types
     assert kernel_repo.get_case(case.id).status == CaseStatus.DRAFT
 
 
@@ -306,14 +344,13 @@ def test_material_revision_invalidates_clearance_and_approval() -> None:
     service, _, _, _, case, owner_id, org_id = build_system()
     draft = create_draft(service, case, owner_id, org_id)
     _, _, cleared = submit_and_clear(service, draft, owner_id)
-    revised_inputs = blueprint_inputs(
-        objective="Prepare drafts and classify customer urgency for human review"
-    )
     revised = service.revise(
         blueprint_id=cleared.blueprint_id,
         created_by=owner_id,
         change_summary="Add urgency classification",
-        **revised_inputs,
+        **blueprint_inputs(
+            objective="Prepare drafts and classify customer urgency for human review"
+        ),
     )
 
     assert revised.status == BlueprintStatus.DRAFT
