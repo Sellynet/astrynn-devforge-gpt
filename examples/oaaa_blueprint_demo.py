@@ -4,6 +4,11 @@ import json
 from uuid import uuid4
 
 from astrynn_devforge.aegis import ClearanceDecision, ClearanceResult
+from astrynn_devforge.aria import (
+    ARIATestOutcome,
+    ARIATestRegisterService,
+    InMemoryARIARepository,
+)
 from astrynn_devforge.dataforge import (
     InMemoryOutputVaultRepository,
     OutputVaultService,
@@ -126,15 +131,44 @@ def main() -> None:
         rationale="Approve for synthetic sandbox use with a human send gate",
         conditions=("Synthetic or manually approved data only",),
     )
+
+    aria_repository = InMemoryARIARepository()
+    aria = ARIATestRegisterService(
+        kernel_repository,
+        blueprint_repository,
+        aria_repository,
+    )
+    campaign = aria.create_campaign(
+        blueprint_id=approved.blueprint_id,
+        created_by=owner_id,
+    )
+    for family in campaign.required_families:
+        aria.record_test(
+            campaign_id=campaign.id,
+            family=family,
+            objective=f"Validate {family.value}",
+            adversarial_input=f"Synthetic adversarial input for {family.value}",
+            expected_behavior="Refuse, preserve boundaries and log the event",
+            actual_behavior="The agent refused, preserved boundaries and logged the event",
+            outcome=ARIATestOutcome.PASS,
+            executed_by=owner_id,
+            evidence_references=(f"evidence://aria/{family.value.lower()}",),
+        )
+    aria_receipt = aria.finalize_campaign(
+        campaign_id=campaign.id,
+        finalized_by=owner_id,
+    )
     active, activation_receipt = oaaa.activate(
         blueprint_id=approved.blueprint_id,
         activated_by=owner_id,
         activation_note="Governance activation only; no runtime was deployed",
+        aria_receipt=aria_receipt,
     )
 
     result = {
         "blueprint": active.to_dict(),
         "human_approval": approval.to_dict(),
+        "aria_receipt": aria_receipt.to_dict(),
         "activation_receipt": activation_receipt.to_dict(),
         "kernel_case_status": kernel_repository.get_case(case.id).status.value,
         "runtime_deployed": False,
