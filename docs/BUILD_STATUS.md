@@ -11,7 +11,7 @@
 | Aegis Deployment Clearance v0.1 | COMPLETADO | PR #11 |
 | Orbyn Atlas Case + Briefing v0.1 | COMPLETADO | PR #12 |
 | Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
-| OAAA Agent Blueprint | PENDIENTE | Issue #5 |
+| OAAA Agent Blueprint v0.1 | EN REVISIÓN | PR #14 |
 | ARIA Test Register | PENDIENTE | Issue #6 |
 | Vigilance Permissions Layer | PENDIENTE | Issue #7 |
 
@@ -25,10 +25,12 @@
 6. Abrir `tests/` para ver exactamente qué comportamientos están comprobados.
 7. Abrir `examples/atlas_demo.py` para ver un caso sintético completo de Atlas.
 8. Abrir `examples/output_vault_demo.py` para ver versionado, decisión y Proof Receipt.
+9. Abrir `examples/oaaa_blueprint_demo.py` para ver el ciclo gobernado de un agente.
 
 ## Regla de lectura
 
 - **Merged** significa incorporado a `main`.
 - **Closed issue** significa criterio de aceptación completado.
 - **Green Actions run** significa que lint y tests automáticos pasaron.
+- `ACTIVE` en OAAA es un estado de gobierno, no un despliegue de software.
 - Ningún módulo se considera producto desplegado hasta que exista aplicación, persistencia y entorno de piloto aprobados.
