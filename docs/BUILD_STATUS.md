@@ -12,7 +12,7 @@
 | Orbyn Atlas Case + Briefing v0.1 | COMPLETADO | PR #12 |
 | Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
 | OAAA Agent Blueprint v0.1 | COMPLETADO | PR #14 |
-| ARIA Test Register | PENDIENTE | Issue #6 |
+| ARIA Test Register v0.1 | EN REVISIÓN | PR #16 |
 | Vigilance Permissions Layer | PENDIENTE | Issue #7 |
 
 ## Cómo comprobar el trabajo desde el móvil
@@ -25,7 +25,7 @@
 6. Abrir `tests/` para ver exactamente qué comportamientos están comprobados.
 7. Abrir `examples/atlas_demo.py` para ver un caso sintético completo de Atlas.
 8. Abrir `examples/output_vault_demo.py` para ver versionado, decisión y Proof Receipt.
-9. Abrir `examples/oaaa_blueprint_demo.py` para ver el ciclo gobernado de un agente.
+9. Abrir `examples/oaaa_blueprint_demo.py` para ver OAAA, ARIA y activación gobernada.
 
 ## Regla de lectura
 
