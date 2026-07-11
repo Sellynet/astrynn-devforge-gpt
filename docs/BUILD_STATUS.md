@@ -10,7 +10,7 @@
 | Kernel mínimo v0.1 | COMPLETADO | PR #10 |
 | Aegis Deployment Clearance v0.1 | COMPLETADO | PR #11 |
 | Orbyn Atlas Case + Briefing v0.1 | COMPLETADO | PR #12 |
-| Output Vault + Proof Receipt | PENDIENTE | Issue #4 |
+| Output Vault + Proof Receipt v0.1 | COMPLETADO | PR #13 |
 | OAAA Agent Blueprint | PENDIENTE | Issue #5 |
 | ARIA Test Register | PENDIENTE | Issue #6 |
 | Vigilance Permissions Layer | PENDIENTE | Issue #7 |
@@ -24,6 +24,7 @@
 5. En la pestaña **Code**, abrir `docs/` para leer arquitectura, límites y metodología.
 6. Abrir `tests/` para ver exactamente qué comportamientos están comprobados.
 7. Abrir `examples/atlas_demo.py` para ver un caso sintético completo de Atlas.
+8. Abrir `examples/output_vault_demo.py` para ver versionado, decisión y Proof Receipt.
 
 ## Regla de lectura
 
