@@ -5,7 +5,7 @@ from uuid import UUID
 
 from .enums import ApprovalDecision, CaseStatus, Sensitivity
 from .models import ApprovalRecord, Case, CaseEvent
-from .repository import InMemoryKernelRepository
+from .repository import KernelRepository
 
 
 class InvalidTransitionError(ValueError):
@@ -37,7 +37,7 @@ _ALLOWED_TRANSITIONS = {
 
 
 class KernelService:
-    def __init__(self, repository: InMemoryKernelRepository) -> None:
+    def __init__(self, repository: KernelRepository) -> None:
         self.repository = repository
 
     def create_case(
@@ -106,7 +106,10 @@ class KernelService:
         conditions: tuple[str, ...] = (),
     ) -> ApprovalRecord:
         case = self.repository.get_case(case_id)
-        if case.owner_id == approver_id and case.sensitivity in {Sensitivity.ORANGE, Sensitivity.RED}:
+        if case.owner_id == approver_id and case.sensitivity in {
+            Sensitivity.ORANGE,
+            Sensitivity.RED,
+        }:
             raise ApprovalRequiredError(
                 "Medium and high-sensitivity cases require separation between owner and approver"
             )
@@ -141,7 +144,9 @@ class KernelService:
     def _assert_approval_allows(self, case_id: UUID, target: CaseStatus) -> None:
         approvals = self.repository.approvals_for_case(case_id)
         if not approvals:
-            raise ApprovalRequiredError(f"Approval required before moving case to {target.value}")
+            raise ApprovalRequiredError(
+                f"Approval required before moving case to {target.value}"
+            )
 
         latest = approvals[-1]
         allowed = {
