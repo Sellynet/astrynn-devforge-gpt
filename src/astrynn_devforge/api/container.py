@@ -3,10 +3,18 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from astrynn_devforge.dataforge import (
+    InMemoryOutputVaultRepository,
+    OutputVaultService,
+)
 from astrynn_devforge.kernel import (
     InMemoryKernelRepository,
     KernelRepository,
     KernelService,
+)
+from astrynn_devforge.oaaa import (
+    InMemoryAgentBlueprintRepository,
+    OAAAAgentBlueprintService,
 )
 from astrynn_devforge.persistence import SQLAlchemyKernelRepository
 
@@ -18,6 +26,11 @@ class ApplicationContainer:
     kernel_repository: KernelRepository
     kernel_service: KernelService
     authenticator: InMemoryTokenAuthenticator
+    output_vault_repository: InMemoryOutputVaultRepository
+    output_vault_service: OutputVaultService
+    blueprint_repository: InMemoryAgentBlueprintRepository
+    oaaa_service: OAAAAgentBlueprintService
+    oaaa_control_plane_persistence: str = "in-memory-development"
 
 
 def _environment_flag(name: str, *, default: bool) -> bool:
@@ -73,8 +86,23 @@ def build_container(
         if token_principals is not None
         else InMemoryTokenAuthenticator.from_environment()
     )
+    output_vault_repository = InMemoryOutputVaultRepository()
+    output_vault_service = OutputVaultService(
+        kernel_repository,
+        output_vault_repository,
+    )
+    blueprint_repository = InMemoryAgentBlueprintRepository()
+    oaaa_service = OAAAAgentBlueprintService(
+        kernel_repository,
+        blueprint_repository,
+        output_vault_service,
+    )
     return ApplicationContainer(
         kernel_repository=kernel_repository,
         kernel_service=KernelService(kernel_repository),
         authenticator=authenticator,
+        output_vault_repository=output_vault_repository,
+        output_vault_service=output_vault_service,
+        blueprint_repository=blueprint_repository,
+        oaaa_service=oaaa_service,
     )

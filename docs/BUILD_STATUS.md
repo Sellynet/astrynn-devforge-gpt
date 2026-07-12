@@ -19,11 +19,11 @@
 | SQLAlchemy + SQLite/PostgreSQL/Supabase v0.3 | COMPLETADO | PR #24 |
 | Aegis Deployment Clearance API v0.4 | COMPLETADO | PR #27 |
 | Orbyn Atlas Briefing API v0.5 | COMPLETADO | PR #29 |
-| OAAA Agent Blueprint API | SIGUIENTE | Pendiente |
-| ARIA Test Register API | PENDIENTE | Pendiente |
+| OAAA Agent Blueprint Design API v0.6 | COMPLETADO | PR #31 |
+| ARIA Test Register API | SIGUIENTE | Pendiente |
 | Vigilance Permissions API | PENDIENTE | Pendiente |
 | Frontend privado móvil | PENDIENTE | Pendiente |
-| Migraciones, RLS e identidad de producción | PENDIENTE | Pendiente |
+| Persistencia OAAA/Output Vault, migraciones, RLS e identidad de producción | PENDIENTE | Pendiente |
 | Despliegue privado controlado | PENDIENTE | Pendiente |
 
 ## Estado operativo real
@@ -34,8 +34,11 @@
 - Los roles y el aislamiento lógico por organización están implementados.
 - Aegis puede evaluar y registrar Clearance Reports y Proof Receipts sin aprobar ni activar casos.
 - Orbyn Atlas puede construir y registrar briefings trazables sin obtener datos externos ni controlar infraestructura.
-- La API todavía no debe exponerse públicamente: faltan identidad de producción, migraciones revisadas, RLS, gestión de secretos, backups y revisión de despliegue.
-- PostgreSQL/Supabase está soportado como backend, pero no se ha conectado ninguna credencial ni base real desde este repositorio público.
+- OAAA puede crear, leer, versionar y enviar Agent Blueprints a revisión mediante API privada.
+- La API OAAA termina deliberadamente en `IN_REVIEW`: no expone clearance, aprobación, activación, credenciales, ejecución ni despliegue.
+- El repositorio Kernel puede ser persistente, pero el control plane OAAA y Output Vault usado por la API v0.6 sigue siendo `in-memory-development`.
+- La API todavía no debe exponerse públicamente: faltan identidad de producción, persistencia OAAA/Output Vault, migraciones revisadas, RLS, gestión de secretos, backups y revisión de despliegue.
+- PostgreSQL/Supabase está soportado como backend Kernel, pero no se ha conectado ninguna credencial ni base real desde este repositorio público.
 
 ## Cómo comprobar el trabajo desde el móvil
 
@@ -49,7 +52,8 @@
 8. Abrir `docs/PERSISTENCE_POSTGRES_SUPABASE_V0_3.md` para revisar persistencia.
 9. Abrir `docs/AEGIS_CLEARANCE_API_V0_4.md` para revisar la API de assurance.
 10. Abrir `docs/ATLAS_BRIEFING_API_V0_5.md` para revisar la API de inteligencia operativa.
-11. Ejecutar la API localmente y abrir `http://127.0.0.1:8000/docs` para usar Swagger.
+11. Abrir `docs/OAAA_AGENT_BLUEPRINT_API_V0_6.md` para revisar la API de diseño gobernado de agentes.
+12. Ejecutar la API localmente y abrir `http://127.0.0.1:8000/docs` para usar Swagger.
 
 ## Regla de lectura
 
@@ -60,3 +64,4 @@
 - `ALLOWED` en Vigilance es una autorización registrada, no una ejecución externa.
 - Compatibilidad con PostgreSQL/Supabase no significa despliegue productivo ni conexión a datos reales.
 - Un briefing Atlas es apoyo a decisión, no una autorización Aegis ni una orden operativa.
+- Un blueprint OAAA es un diseño gobernado, no un agente conectado ni ejecutándose.

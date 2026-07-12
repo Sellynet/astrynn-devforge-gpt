@@ -22,6 +22,7 @@ from .auth import (
     require_permission,
 )
 from .container import ApplicationContainer, build_container
+from .oaaa_routes import router as oaaa_router
 from .schemas import (
     ApprovalCreateRequest,
     ApprovalResponse,
@@ -91,22 +92,27 @@ def _assert_owner_transition(principal: Principal, case, target: CaseStatus) -> 
 
 def create_app(container: ApplicationContainer | None = None) -> FastAPI:
     app = FastAPI(
-        title="Orbyn Atlas + Aegis Private API",
-        version="0.5.0",
+        title="Orbyn Atlas + Aegis + OAAA Private API",
+        version="0.6.0",
         description=(
             "Controlled development API with bearer authentication, organization-scoped "
-            "RBAC, configurable persistence, governed Aegis Clearance, and traceable "
-            "Orbyn Atlas briefings. No external actions or runtime deployment."
+            "RBAC, configurable Kernel persistence, governed Aegis Clearance, traceable "
+            "Orbyn Atlas briefings, and versioned OAAA agent blueprints. No credentials, "
+            "external actions, activation endpoint, or runtime deployment."
         ),
     )
     app.state.container = container or build_container()
     app.include_router(aegis_router)
     app.include_router(atlas_router)
+    app.include_router(oaaa_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health() -> HealthResponse:
         return HealthResponse(
-            persistence=app.state.container.kernel_repository.persistence_name
+            persistence=app.state.container.kernel_repository.persistence_name,
+            oaaa_control_plane_persistence=(
+                app.state.container.oaaa_control_plane_persistence
+            ),
         )
 
     @app.get("/api/v1/me", response_model=PrincipalResponse, tags=["identity"])

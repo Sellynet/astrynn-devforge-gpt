@@ -32,6 +32,10 @@ class Permission(StrEnum):
     AEGIS_RECORD = "AEGIS_RECORD"
     ATLAS_BUILD = "ATLAS_BUILD"
     ATLAS_RECORD = "ATLAS_RECORD"
+    OAAA_CREATE = "OAAA_CREATE"
+    OAAA_READ = "OAAA_READ"
+    OAAA_REVISE = "OAAA_REVISE"
+    OAAA_SUBMIT = "OAAA_SUBMIT"
 
 
 _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
@@ -45,6 +49,10 @@ _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
             Permission.CASE_TRANSITION,
             Permission.AEGIS_EVALUATE,
             Permission.ATLAS_BUILD,
+            Permission.OAAA_CREATE,
+            Permission.OAAA_READ,
+            Permission.OAAA_REVISE,
+            Permission.OAAA_SUBMIT,
         }
     ),
     AuthRole.REVIEWER: frozenset(
@@ -57,10 +65,26 @@ _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
             Permission.AEGIS_RECORD,
             Permission.ATLAS_BUILD,
             Permission.ATLAS_RECORD,
+            Permission.OAAA_CREATE,
+            Permission.OAAA_READ,
+            Permission.OAAA_REVISE,
+            Permission.OAAA_SUBMIT,
         }
     ),
-    AuthRole.AUDITOR: frozenset({Permission.CASE_LIST, Permission.CASE_READ}),
-    AuthRole.VIEWER: frozenset({Permission.CASE_LIST, Permission.CASE_READ}),
+    AuthRole.AUDITOR: frozenset(
+        {
+            Permission.CASE_LIST,
+            Permission.CASE_READ,
+            Permission.OAAA_READ,
+        }
+    ),
+    AuthRole.VIEWER: frozenset(
+        {
+            Permission.CASE_LIST,
+            Permission.CASE_READ,
+            Permission.OAAA_READ,
+        }
+    ),
 }
 
 
