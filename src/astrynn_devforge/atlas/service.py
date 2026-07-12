@@ -6,7 +6,7 @@ from uuid import UUID
 from astrynn_devforge.kernel import (
     ArtifactStatus,
     EvidenceReference,
-    InMemoryKernelRepository,
+    KernelRepository,
     OutputArtifact,
     Sensitivity,
 )
@@ -48,7 +48,7 @@ _SENSITIVITY_ORDER = {
 class OrbynAtlasService:
     """Builds traceable operational briefings without taking external action."""
 
-    def __init__(self, repository: InMemoryKernelRepository) -> None:
+    def __init__(self, repository: KernelRepository) -> None:
         self.repository = repository
 
     def build_package(
@@ -265,9 +265,11 @@ class OrbynAtlasService:
         action = risk.mitigation.strip() or (
             "Definir owner, indicadores tempranos, límites de exposición y respuesta."
         )
-        prefix = "Escalar a Aegis antes de cualquier despliegue. " if (
-            risk.level == RiskLevel.CRITICAL
-        ) else ""
+        prefix = (
+            "Escalar a Aegis antes de cualquier despliegue. "
+            if risk.level == RiskLevel.CRITICAL
+            else ""
+        )
         return AtlasStatement(
             statement_type=StatementType.RECOMMENDATION,
             text=f"{prefix}{action}",
