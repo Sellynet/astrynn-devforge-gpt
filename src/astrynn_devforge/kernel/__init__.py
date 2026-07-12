@@ -8,7 +8,7 @@ from .models import (
     Organization,
     OutputArtifact,
 )
-from .repository import CaseNotFoundError, InMemoryKernelRepository
+from .repository import CaseNotFoundError, InMemoryKernelRepository, KernelRepository
 from .service import ApprovalRequiredError, InvalidTransitionError, KernelService
 
 __all__ = [
@@ -24,6 +24,7 @@ __all__ = [
     "EvidenceReference",
     "InMemoryKernelRepository",
     "InvalidTransitionError",
+    "KernelRepository",
     "KernelService",
     "Organization",
     "OutputArtifact",
