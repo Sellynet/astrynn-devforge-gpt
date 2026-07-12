@@ -90,17 +90,19 @@ def _assert_owner_transition(principal: Principal, case, target: CaseStatus) -> 
 def create_app(container: ApplicationContainer | None = None) -> FastAPI:
     app = FastAPI(
         title="Orbyn Atlas + Aegis Private API",
-        version="0.2.0",
+        version="0.3.0",
         description=(
-            "Controlled development API with bearer authentication and organization-scoped "
-            "RBAC. No external actions or runtime deployment."
+            "Controlled development API with bearer authentication, organization-scoped "
+            "RBAC, and configurable persistence. No external actions or runtime deployment."
         ),
     )
     app.state.container = container or build_container()
 
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health() -> HealthResponse:
-        return HealthResponse()
+        return HealthResponse(
+            persistence=app.state.container.kernel_repository.persistence_name
+        )
 
     @app.get("/api/v1/me", response_model=PrincipalResponse, tags=["identity"])
     def me(principal: CurrentPrincipal) -> PrincipalResponse:
