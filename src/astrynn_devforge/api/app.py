@@ -12,6 +12,7 @@ from astrynn_devforge.kernel import (
 )
 
 from .aegis_routes import router as aegis_router
+from .atlas_routes import router as atlas_router
 from .auth import (
     AuthRole,
     CurrentPrincipal,
@@ -91,15 +92,16 @@ def _assert_owner_transition(principal: Principal, case, target: CaseStatus) -> 
 def create_app(container: ApplicationContainer | None = None) -> FastAPI:
     app = FastAPI(
         title="Orbyn Atlas + Aegis Private API",
-        version="0.4.0",
+        version="0.5.0",
         description=(
             "Controlled development API with bearer authentication, organization-scoped "
-            "RBAC, configurable persistence, and governed Aegis Clearance evaluation. "
-            "No external actions or runtime deployment."
+            "RBAC, configurable persistence, governed Aegis Clearance, and traceable "
+            "Orbyn Atlas briefings. No external actions or runtime deployment."
         ),
     )
     app.state.container = container or build_container()
     app.include_router(aegis_router)
+    app.include_router(atlas_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health() -> HealthResponse:
