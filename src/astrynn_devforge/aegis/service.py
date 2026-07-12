@@ -5,7 +5,7 @@ from uuid import UUID
 from astrynn_devforge.kernel import (
     ArtifactStatus,
     EvidenceReference,
-    InMemoryKernelRepository,
+    KernelRepository,
     OutputArtifact,
 )
 
@@ -61,7 +61,7 @@ class AegisClearanceService:
         self,
         *,
         package: ClearancePackage,
-        repository: InMemoryKernelRepository,
+        repository: KernelRepository,
         owner_id: UUID,
     ) -> tuple[OutputArtifact, EvidenceReference]:
         case = repository.get_case(package.result.case_id)

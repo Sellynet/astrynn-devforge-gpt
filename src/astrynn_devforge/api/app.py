@@ -11,6 +11,7 @@ from astrynn_devforge.kernel import (
     InvalidTransitionError,
 )
 
+from .aegis_routes import router as aegis_router
 from .auth import (
     AuthRole,
     CurrentPrincipal,
@@ -90,13 +91,15 @@ def _assert_owner_transition(principal: Principal, case, target: CaseStatus) -> 
 def create_app(container: ApplicationContainer | None = None) -> FastAPI:
     app = FastAPI(
         title="Orbyn Atlas + Aegis Private API",
-        version="0.3.0",
+        version="0.4.0",
         description=(
             "Controlled development API with bearer authentication, organization-scoped "
-            "RBAC, and configurable persistence. No external actions or runtime deployment."
+            "RBAC, configurable persistence, and governed Aegis Clearance evaluation. "
+            "No external actions or runtime deployment."
         ),
     )
     app.state.container = container or build_container()
+    app.include_router(aegis_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health() -> HealthResponse:
