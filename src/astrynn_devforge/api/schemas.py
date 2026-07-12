@@ -3,14 +3,18 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from astrynn_devforge.kernel import ApprovalDecision, CaseStatus, Sensitivity
 
 from .auth import AuthRole
 
 
-class HealthResponse(BaseModel):
+class APIModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class HealthResponse(APIModel):
     status: str = "ok"
     service: str = "astrynn-devforge"
     version: str = "0.2.0"
@@ -18,39 +22,39 @@ class HealthResponse(BaseModel):
     authentication: str = "bearer-rbac-development"
 
 
-class PrincipalResponse(BaseModel):
+class PrincipalResponse(APIModel):
     actor_id: UUID
     organization_id: UUID
     role: AuthRole
     display_name: str
 
 
-class CaseCreateRequest(BaseModel):
+class CaseCreateRequest(APIModel):
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(default="", max_length=5000)
     organization_id: UUID
     sensitivity: Sensitivity
 
 
-class CaseTransitionRequest(BaseModel):
+class CaseTransitionRequest(APIModel):
     target: CaseStatus
     reason: str = Field(min_length=1, max_length=1000)
 
 
-class ApprovalCreateRequest(BaseModel):
+class ApprovalCreateRequest(APIModel):
     decision: ApprovalDecision
     rationale: str = Field(min_length=1, max_length=2000)
     conditions: tuple[str, ...] = ()
 
 
-class CaseEventResponse(BaseModel):
+class CaseEventResponse(APIModel):
     event_type: str
     actor_id: UUID
     details: dict[str, object]
     created_at: datetime
 
 
-class CaseResponse(BaseModel):
+class CaseResponse(APIModel):
     id: UUID
     title: str
     description: str
@@ -63,7 +67,7 @@ class CaseResponse(BaseModel):
     events: tuple[CaseEventResponse, ...]
 
 
-class ApprovalResponse(BaseModel):
+class ApprovalResponse(APIModel):
     id: UUID
     case_id: UUID
     approver_id: UUID
@@ -73,5 +77,5 @@ class ApprovalResponse(BaseModel):
     created_at: datetime
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(APIModel):
     detail: str
