@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from copy import deepcopy
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 from .models import ApprovalRecord, Case, EvidenceReference, OutputArtifact
@@ -9,6 +10,32 @@ from .models import ApprovalRecord, Case, EvidenceReference, OutputArtifact
 
 class CaseNotFoundError(KeyError):
     pass
+
+
+@runtime_checkable
+class KernelRepository(Protocol):
+    """Persistence contract shared by in-memory and SQL-backed adapters."""
+
+    @property
+    def persistence_name(self) -> str: ...
+
+    def save_case(self, case: Case) -> Case: ...
+
+    def get_case(self, case_id: UUID) -> Case: ...
+
+    def list_cases(self) -> list[Case]: ...
+
+    def append_approval(self, approval: ApprovalRecord) -> ApprovalRecord: ...
+
+    def approvals_for_case(self, case_id: UUID) -> tuple[ApprovalRecord, ...]: ...
+
+    def append_evidence(self, evidence: EvidenceReference) -> EvidenceReference: ...
+
+    def evidence_for_case(self, case_id: UUID) -> tuple[EvidenceReference, ...]: ...
+
+    def append_output(self, output: OutputArtifact) -> OutputArtifact: ...
+
+    def outputs_for_case(self, case_id: UUID) -> tuple[OutputArtifact, ...]: ...
 
 
 class InMemoryKernelRepository:
@@ -19,6 +46,10 @@ class InMemoryKernelRepository:
         self._approvals: list[ApprovalRecord] = []
         self._evidence: list[EvidenceReference] = []
         self._outputs: list[OutputArtifact] = []
+
+    @property
+    def persistence_name(self) -> str:
+        return "in-memory-development"
 
     def save_case(self, case: Case) -> Case:
         self._cases[case.id] = deepcopy(case)
