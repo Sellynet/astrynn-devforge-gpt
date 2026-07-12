@@ -30,6 +30,8 @@ class Permission(StrEnum):
     CASE_APPROVE = "CASE_APPROVE"
     AEGIS_EVALUATE = "AEGIS_EVALUATE"
     AEGIS_RECORD = "AEGIS_RECORD"
+    ATLAS_BUILD = "ATLAS_BUILD"
+    ATLAS_RECORD = "ATLAS_RECORD"
 
 
 _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
@@ -42,6 +44,7 @@ _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
             Permission.CASE_READ,
             Permission.CASE_TRANSITION,
             Permission.AEGIS_EVALUATE,
+            Permission.ATLAS_BUILD,
         }
     ),
     AuthRole.REVIEWER: frozenset(
@@ -52,6 +55,8 @@ _ROLE_PERMISSIONS: dict[AuthRole, frozenset[Permission]] = {
             Permission.CASE_APPROVE,
             Permission.AEGIS_EVALUATE,
             Permission.AEGIS_RECORD,
+            Permission.ATLAS_BUILD,
+            Permission.ATLAS_RECORD,
         }
     ),
     AuthRole.AUDITOR: frozenset({Permission.CASE_LIST, Permission.CASE_READ}),
