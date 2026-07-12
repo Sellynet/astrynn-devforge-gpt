@@ -17,9 +17,10 @@ class APIModel(BaseModel):
 class HealthResponse(APIModel):
     status: str = "ok"
     service: str = "astrynn-devforge"
-    version: str = "0.5.0"
+    version: str = "0.6.0"
     persistence: str
     authentication: str = "bearer-rbac-development"
+    oaaa_control_plane_persistence: str = "in-memory-development"
 
 
 class PrincipalResponse(APIModel):
