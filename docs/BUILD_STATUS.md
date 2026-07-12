@@ -19,7 +19,7 @@
 | SQLAlchemy + SQLite/PostgreSQL/Supabase v0.3 | COMPLETADO | PR #24 |
 | Aegis Deployment Clearance API v0.4 | COMPLETADO | PR #27 |
 | Orbyn Atlas Briefing API v0.5 | COMPLETADO | PR #29 |
-| OAAA Agent Blueprint Design API v0.6 | IMPLEMENTADO | Esta PR |
+| OAAA Agent Blueprint Design API v0.6 | COMPLETADO | PR #31 |
 | ARIA Test Register API | SIGUIENTE | Pendiente |
 | Vigilance Permissions API | PENDIENTE | Pendiente |
 | Frontend privado móvil | PENDIENTE | Pendiente |
