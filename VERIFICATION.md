@@ -4,7 +4,7 @@ Fecha de apertura: 2026-07-16
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS VERIFICADOS`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO VERIFICADOS`
 
 ## 1. Regla de evidencia
 
@@ -15,7 +15,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. Siguen pendientes persistencia tras reinicio, PostgreSQL/Supabase, lectura humana de tests y revisión de gaps de Pull Requests.
+Una CI verde no cierra por sí sola todo el Bloque 0. Siguen pendientes el README reproducible, PostgreSQL/Supabase, persistencia operativa OAAA, lectura humana de tests, revisión de gaps de Pull Requests y revisión humana nominal.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -71,6 +71,27 @@ Informe permanente:
 Informe permanente:
 
 `docs/verification/BLOCK0_NEGATIVE_CONTROLS_2026-07-16.md`
+
+### R-005 · Persistencia tras reiniciar Uvicorn
+
+- Workflow: `Block 0 Restart Persistence Verification`
+- Run ID: `29499245290`
+- Run number: `5`
+- Head de la rama: `7b5feda97ac744106cf689320627d2cf72fc32f9`
+- Commit evaluado: `18cde36c0dd3d14e941ff88c274d53e38cfb4563`
+- Fecha UTC: `2026-07-16T12:43:26Z`
+- Python: `3.11.15`
+- Ruff: `All checks passed!`
+- pytest: `113 passed, 1 warning in 2.58s`
+- Resultado: `20/20 FUNCIONA VERIFICADO`
+- Artifact: `block0-restart-persistence-5`
+- Artifact ID: `8375700175`
+- Artifact SHA-256: `4bbfc58d7aa57bb1876dd00e102cb2c957a0c398d2b48e899321e3eabc39d7c0`
+- SQLite SHA-256: `07714892ca70cd0b76fee4532618bb36c444c8656ebed6195fa905c8808c80fb`
+
+Informe permanente:
+
+`docs/verification/BLOCK0_RESTART_PERSISTENCE_2026-07-16.md`
 
 ## 3. Endpoints verificados
 
@@ -131,15 +152,54 @@ Informe permanente:
 - OAAA rechaza wildcards de tools;
 - OAAA rechaza plan ARIA sin `INCIDENT_TRIGGER`.
 
-## 5. Evidencia funcional confirmada
+## 5. Persistencia tras reinicio verificada
+
+La ejecución utilizó dos procesos Uvicorn distintos y el mismo archivo SQLite.
+
+Después de detener completamente el primer proceso y arrancar el segundo con `ASTRYNN_AUTO_CREATE_SCHEMA=false`, sobrevivieron sin cambios:
+
+- case ID y estado `APPROVED`;
+- versión interna Kernel `5`;
+- cuatro eventos con los mismos IDs;
+- una aprobación con el mismo ID;
+- cuatro outputs con los mismos IDs;
+- seis evidencias con los mismos IDs.
+
+Las filas físicas posteriores coincidieron con el baseline previo:
+
+```json
+{
+  "cases": 1,
+  "events": 4,
+  "approvals": 1,
+  "outputs": 4,
+  "evidence": 6
+}
+```
+
+El caso recuperado pudo evaluarse de nuevo con Aegis y produjo `APTO` con puntuación total `9`.
+
+### Frontera OAAA
+
+El blueprint operativo anterior devolvió `404 Blueprint not found` después del reinicio.
+
+Esto confirma:
+
+- `estado operativo OAAA`: volátil en `InMemoryAgentBlueprintRepository`;
+- `rastro de auditoría OAAA`: persistente en Kernel.
+
+Persistieron dos outputs `OAAA_AGENT_BLUEPRINT` y las evidencias de Output Vault y OAAA correspondientes a las versiones 1 y 2.
+
+## 6. Evidencia funcional confirmada
 
 ### Kernel y autorización
 
 - identidad derivada del token;
 - creación, listado y lectura del caso;
-- transición `DRAFT → IN_REVIEW`;
-- aprobación independiente con owner y reviewer separados;
-- límites organizativos y de ownership observados mediante pruebas negativas.
+- transiciones gobernadas;
+- aprobación independiente;
+- aislamiento organizativo y de ownership;
+- persistencia SQLite entre procesos para casos, eventos, aprobaciones, outputs y evidencias.
 
 ### Aegis
 
@@ -147,6 +207,7 @@ Informe permanente:
 - fingerprints de entrada;
 - registro de Clearance Report y Proof Receipt;
 - specialist triggers y critical blockers prevalecen sobre el score;
+- outputs y evidencia sobreviven al reinicio;
 - no hay aprobación, activación o despliegue como efecto secundario.
 
 ### Atlas
@@ -154,17 +215,20 @@ Informe permanente:
 - FACT, INFERENCE, ASSUMPTION y RECOMMENDATION tipadas;
 - registro de briefing con output y evidencia;
 - referencias rotas rechazadas;
-- producción final separada del owner.
+- producción final separada del owner;
+- outputs y evidencia sobreviven al reinicio.
 
 ### OAAA
 
-- blueprint versionado de `DRAFT` a `IN_REVIEW`;
+- blueprint versionado de `DRAFT` a `IN_REVIEW` dentro del proceso;
 - safety fingerprint e integrity hash;
 - ownership y organización controlados;
 - wildcards y planes ARIA incompletos rechazados;
-- sin endpoint de activación.
+- sin endpoint de activación;
+- artefactos y evidencias de auditoría durables;
+- repositorio operativo de blueprints todavía volátil.
 
-## 6. Límites y hallazgos abiertos
+## 7. Límites y hallazgos abiertos
 
 ### README
 
@@ -172,15 +236,11 @@ Estado: `FALLA · DOCUMENTACIÓN INSUFICIENTE`
 
 El README permite instalar y ejecutar Ruff/pytest, pero no documenta todavía el recorrido completo desde clone hasta API operativa, tokens, Uvicorn, SQLite, Swagger, reinicio y persistencia.
 
-### OAAA
+### OAAA operativo
 
 Estado: `DUDOSO · CAPACIDAD PRODUCTIVA NO CONSTRUIDA`
 
-El control plane declara:
-
-`in-memory-development`
-
-Los endpoints y el versionado funcionan dentro del proceso activo, pero no se ha demostrado supervivencia tras reinicio.
+El control plane declara `in-memory-development` y el blueprint operativo se pierde al reiniciar. El rastro de auditoría sí es durable, pero no sustituye a una persistencia operativa de blueprints y versiones.
 
 ### Warning de dependencias
 
@@ -188,28 +248,30 @@ Estado: `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`
 
 pytest registra un `StarletteDeprecationWarning` relacionado con `httpx` y `starlette.testclient`.
 
-### Primer intento negativo descartado
+### Intentos de harness descartados
 
-El Run ID `29495923583` observó correctamente HTTP 403 para el viewer, pero el harness exigía la palabra genérica `permission` en lugar de aceptar el detalle real `Role VIEWER lacks AEGIS_EVALUATE`.
+- Run negativo `29495923583`: criterio textual demasiado estricto para HTTP 403. Corregido.
+- Run reinicio `29498525073`: SQLite contaminó pytest y se intentaron leer campos no expuestos por `CaseResponse`. Corregido.
+- Run reinicio `29498940953`: esperaba 2 outputs y 2 evidencias, pero OAAA añadió rastro durable y produjo 4 outputs y 6 evidencias. Corregido mediante baseline dinámico.
 
-Clasificación: `FALLA DEL HARNESS · CORREGIDA`.
+Clasificación común: `FALLA DEL HARNESS · CORREGIDA`.
 
-## 7. Pendientes para cerrar el Bloque 0
+## 8. Pendientes para cerrar el Bloque 0
 
 1. Corregir el README y repetir el levantamiento siguiendo solo esa documentación.
-2. Verificar persistencia Kernel SQLite después de reiniciar Uvicorn.
-3. Documentar la pérdida esperada de OAAA tras reinicio.
-4. Construir persistencia OAAA antes de verificar su supervivencia.
-5. Repetir persistencia Kernel con PostgreSQL/Supabase.
-6. Leer manualmente los tests y valorar su calidad.
-7. Revisar gaps entre Pull Requests y commits.
-8. Resolver o aceptar formalmente el warning.
-9. Obtener revisión humana nominal.
+2. Construir persistencia operativa OAAA y verificar su supervivencia tras reinicio.
+3. Repetir persistencia Kernel con PostgreSQL/Supabase.
+4. Leer manualmente los tests y valorar su calidad, relevancia y cobertura real.
+5. Revisar gaps entre Pull Requests y commits.
+6. Resolver o aceptar formalmente el warning de Starlette/httpx.
+7. Obtener revisión humana nominal de la evidencia.
 
-## 8. Conclusión
+## 9. Conclusión
 
-Los 16 endpoints de la API privada v0.6.0 y los 22 controles negativos definidos para este tramo quedan como `FUNCIONA VERIFICADO` dentro de ejecuciones reproducibles de GitHub Actions.
+Los 16 endpoints, los 22 controles negativos y los 20 controles de persistencia tras reinicio quedan como `FUNCIONA VERIFICADO` dentro de ejecuciones reproducibles de GitHub Actions.
 
-Esto no demuestra todavía persistencia completa, identidad productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación.
+La persistencia SQLite del Kernel está demostrada entre procesos distintos. OAAA conserva artefactos y evidencias de auditoría, pero no conserva todavía el blueprint operativo.
 
-El siguiente tramo obligatorio es la persistencia después de reinicio.
+Esto no demuestra identidad productiva, PostgreSQL/Supabase, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.
+
+El siguiente tramo obligatorio es corregir el README o construir persistencia operativa OAAA. Según ADR-002, la prioridad inmediata debe ser cerrar primero la reproducibilidad documental.
