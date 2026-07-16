@@ -421,7 +421,10 @@ def main() -> int:
                 json=clearance_payload(),
             ),
             checks=lambda _response, body: [
-                (detail_contains(body, "permission"), "missing permission is identified")
+                (
+                    detail_contains(body, "lacks", "aegis_evaluate"),
+                    "VIEWER lacks AEGIS_EVALUATE is identified",
+                )
             ],
         )
 
