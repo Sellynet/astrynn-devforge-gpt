@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - "README.md"
+      - "VERIFICATION.md"
+      - "docs/verification/**"
       - ".github/workflows/block0-readme-cleanroom.yml"
       - "src/**"
       - "tests/**"
