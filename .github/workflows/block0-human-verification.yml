@@ -2,6 +2,17 @@ name: Block 0 Human Verification
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/block0-human-verification.yml"
+      - ".github/scripts/block0_verify.py"
+      - "VERIFICATION.md"
+      - "src/**"
+      - "tests/**"
+      - "setup.cfg"
+      - "setup.py"
 
 permissions:
   contents: read
