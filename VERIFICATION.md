@@ -4,7 +4,7 @@ Fecha de apertura: 2026-07-16
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · 16/16 ENDPOINTS VERIFICADOS`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS VERIFICADOS`
 
 ## 1. Regla de evidencia
 
@@ -15,7 +15,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. Siguen pendientes las pruebas negativas, persistencia tras reinicio, PostgreSQL/Supabase, lectura humana de tests y revisión de gaps de Pull Requests.
+Una CI verde no cierra por sí sola todo el Bloque 0. Siguen pendientes persistencia tras reinicio, PostgreSQL/Supabase, lectura humana de tests y revisión de gaps de Pull Requests.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -42,7 +42,6 @@ Informe permanente:
 - Workflow: `Block 0 Remaining Endpoint Verification`
 - Run ID: `29494393775`
 - Run number: `1`
-- PR head: `a0b1d9056f1bed80879e03fccd5c9eeb4f57df17`
 - Python: `3.11.15`
 - Ruff: `All checks passed!`
 - pytest: `113 passed, 1 warning`
@@ -53,6 +52,25 @@ Informe permanente:
 Informe permanente:
 
 `docs/verification/BLOCK0_REMAINING_8_ENDPOINTS_2026-07-16.md`
+
+### R-004 · Controles negativos deliberados
+
+- Workflow: `Block 0 Deliberate Negative Verification`
+- Run ID: `29496148880`
+- Run number: `2`
+- Commit evaluado: `883bcf5d93f9d0f7faa154dfb1d4439f699ed036`
+- Fecha UTC: `2026-07-16T11:54:45Z`
+- Python: `3.11.15`
+- Ruff: `All checks passed!`
+- pytest: `113 passed, 1 warning in 2.44s`
+- Resultado: `22/22 FUNCIONA VERIFICADO`
+- Artifact: `block0-negative-verification-2`
+- Artifact ID: `8374449620`
+- Artifact SHA-256: `2911df6146ed80f7919ff31051497632d993dd415941c04a253cb47e1d7e4f4a`
+
+Informe permanente:
+
+`docs/verification/BLOCK0_NEGATIVE_CONTROLS_2026-07-16.md`
 
 ## 3. Endpoints verificados
 
@@ -75,44 +93,78 @@ Informe permanente:
 | E-015 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/revisions` | 201 | `FUNCIONA VERIFICADO` |
 | E-016 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/submit` | 200 | `FUNCIONA VERIFICADO` |
 
-## 4. Evidencia funcional confirmada
+## 4. Controles negativos verificados
+
+### Autenticación e identidad
+
+- token ausente rechazado con 401;
+- token inválido rechazado con 401;
+- `actor_id`, `owner_id` y `organization_id` falsificables rechazados;
+- identidad derivada del principal autenticado.
+
+### Aislamiento y least privilege
+
+- creación y lectura cross-organization rechazadas;
+- lectura cross-organization de blueprint rechazada;
+- segundo owner bloqueado sobre caso ajeno;
+- viewer bloqueado para Aegis Evaluate.
+
+### Separación de funciones
+
+- autoaprobación bloqueada;
+- owner bloqueado para activación;
+- owner bloqueado para Aegis Record;
+- owner bloqueado para Atlas Record.
+
+### Estados y transiciones
+
+- `DRAFT → ACTIVE` rechazado;
+- envío OAAA duplicado rechazado;
+- endpoint OAAA `activate` inexistente.
+
+### Controles Aegis, Atlas y OAAA
+
+- score 6 rechazado;
+- specialist trigger fuerza revisión especializada;
+- critical blocker impide `APTO`;
+- Atlas rechaza referencias de fuente inexistentes;
+- OAAA rechaza wildcards de tools;
+- OAAA rechaza plan ARIA sin `INCIDENT_TRIGGER`.
+
+## 5. Evidencia funcional confirmada
 
 ### Kernel y autorización
 
 - identidad derivada del token;
 - creación, listado y lectura del caso;
 - transición `DRAFT → IN_REVIEW`;
-- aprobación independiente con owner y reviewer separados.
+- aprobación independiente con owner y reviewer separados;
+- límites organizativos y de ownership observados mediante pruebas negativas.
 
 ### Aegis
 
-- evaluación determinista con decisión `APTO`;
-- puntuación total `9`;
-- fingerprint de entrada;
-- registro de Clearance Report;
-- `output_id` y `evidence_id`;
-- estado del artefacto `REVIEW`;
-- sin aprobación, activación o despliegue como efecto secundario.
+- evaluación determinista;
+- fingerprints de entrada;
+- registro de Clearance Report y Proof Receipt;
+- specialist triggers y critical blockers prevalecen sobre el score;
+- no hay aprobación, activación o despliegue como efecto secundario.
 
 ### Atlas
 
 - FACT, INFERENCE, ASSUMPTION y RECOMMENDATION tipadas;
-- fuentes y fingerprints trazables;
-- resumen ejecutivo;
 - registro de briefing con output y evidencia;
-- declaración explícita de apoyo a decisión, sin control de infraestructura.
+- referencias rotas rechazadas;
+- producción final separada del owner.
 
 ### OAAA
 
-- blueprint v1 en `DRAFT`;
-- identidad y organización derivadas del caso;
+- blueprint versionado de `DRAFT` a `IN_REVIEW`;
 - safety fingerprint e integrity hash;
-- lectura e historial;
-- revisión material a v2 con parent version;
-- envío a `IN_REVIEW` en v3;
-- sin endpoint ni efecto de activación.
+- ownership y organización controlados;
+- wildcards y planes ARIA incompletos rechazados;
+- sin endpoint de activación.
 
-## 5. Límites y hallazgos abiertos
+## 6. Límites y hallazgos abiertos
 
 ### README
 
@@ -136,35 +188,28 @@ Estado: `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`
 
 pytest registra un `StarletteDeprecationWarning` relacionado con `httpx` y `starlette.testclient`.
 
-## 6. Pendientes para cerrar el Bloque 0
+### Primer intento negativo descartado
+
+El Run ID `29495923583` observó correctamente HTTP 403 para el viewer, pero el harness exigía la palabra genérica `permission` en lugar de aceptar el detalle real `Role VIEWER lacks AEGIS_EVALUATE`.
+
+Clasificación: `FALLA DEL HARNESS · CORREGIDA`.
+
+## 7. Pendientes para cerrar el Bloque 0
 
 1. Corregir el README y repetir el levantamiento siguiendo solo esa documentación.
-2. Ejecutar pruebas negativas deliberadas:
-   - token ausente e inválido;
-   - acceso cross-organization;
-   - autoaprobación;
-   - owner registrando Clearance o Atlas final;
-   - transición inválida;
-   - score fuera de rango;
-   - blocker crítico y specialist trigger;
-   - wildcard de tools;
-   - familia ARIA ausente;
-   - acceso OAAA de otro owner;
-   - envío duplicado;
-   - intento de activación.
-3. Verificar persistencia Kernel SQLite después de reiniciar Uvicorn.
-4. Documentar la pérdida esperada de OAAA tras reinicio.
-5. Construir persistencia OAAA antes de verificar restart.
-6. Repetir persistencia Kernel con PostgreSQL/Supabase.
-7. Leer manualmente los tests y valorar su calidad.
-8. Revisar gaps entre Pull Requests y commits.
-9. Resolver o aceptar formalmente el warning.
-10. Obtener revisión humana nominal.
+2. Verificar persistencia Kernel SQLite después de reiniciar Uvicorn.
+3. Documentar la pérdida esperada de OAAA tras reinicio.
+4. Construir persistencia OAAA antes de verificar su supervivencia.
+5. Repetir persistencia Kernel con PostgreSQL/Supabase.
+6. Leer manualmente los tests y valorar su calidad.
+7. Revisar gaps entre Pull Requests y commits.
+8. Resolver o aceptar formalmente el warning.
+9. Obtener revisión humana nominal.
 
-## 7. Conclusión
+## 8. Conclusión
 
-Los 16 endpoints de la API privada v0.6.0 quedan como `FUNCIONA VERIFICADO` dentro de ejecuciones reproducibles de GitHub Actions.
+Los 16 endpoints de la API privada v0.6.0 y los 22 controles negativos definidos para este tramo quedan como `FUNCIONA VERIFICADO` dentro de ejecuciones reproducibles de GitHub Actions.
 
-Esto no demuestra todavía resistencia adversarial, persistencia completa, identidad productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación.
+Esto no demuestra todavía persistencia completa, identidad productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación.
 
-El siguiente tramo obligatorio son las pruebas negativas deliberadas.
+El siguiente tramo obligatorio es la persistencia después de reinicio.
