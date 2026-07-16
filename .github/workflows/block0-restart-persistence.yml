@@ -1,0 +1,319 @@
+name: Block 0 Restart Persistence Verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/scripts/block0_verify_restart.py"
+      - ".github/workflows/block0-restart-persistence.yml"
+      - ".github/scripts/block0_verify_remaining.py"
+      - "VERIFICATION.md"
+      - "docs/verification/**"
+      - "src/**"
+      - "setup.cfg"
+      - "setup.py"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify persistence across two Uvicorn processes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      ORG_ID: 11111111-1111-4111-8111-111111111111
+      OWNER_ID: 22222222-2222-4222-8222-222222222222
+      REVIEWER_ID: 33333333-3333-4333-8333-333333333333
+      OWNER_TOKEN: owner-restart-token
+      REVIEWER_TOKEN: reviewer-restart-token
+      DATABASE_PATH: verification-restart.db
+      ASTRYNN_DATABASE_URL: sqlite:///./verification-restart.db
+      ASTRYNN_API_TOKENS_JSON: >-
+        [{"token":"owner-restart-token","actor_id":"22222222-2222-4222-8222-222222222222","organization_id":"11111111-1111-4111-8111-111111111111","role":"CASE_OWNER","display_name":"Restart Owner"},{"token":"reviewer-restart-token","actor_id":"33333333-3333-4333-8333-333333333333","organization_id":"11111111-1111-4111-8111-111111111111","role":"REVIEWER","display_name":"Restart Reviewer"}]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare evidence directory
+        run: mkdir -p verification-artifacts
+
+      - name: Record clean environment
+        id: environment
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            echo "UTC timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            python --version
+            pip --version
+            git rev-parse HEAD
+            git status --short
+          } 2>&1 | tee verification-artifacts/environment.txt
+
+      - name: Install project
+        id: install
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install --upgrade pip 2>&1 | tee verification-artifacts/install.txt
+          pip install -e . ruff pytest 2>&1 | tee -a verification-artifacts/install.txt
+
+      - name: Run Ruff
+        id: ruff
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          ruff check . 2>&1 | tee verification-artifacts/ruff.txt
+
+      - name: Run pytest in default isolated configuration
+        id: pytest
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest -q 2>&1 | tee verification-artifacts/pytest.txt
+
+      - name: Start first Uvicorn process with new SQLite schema
+        id: api_first
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        env:
+          ASTRYNN_AUTO_CREATE_SCHEMA: "true"
+        run: |
+          set -euo pipefail
+          rm -f "$DATABASE_PATH"
+          nohup uvicorn astrynn_devforge.api:app \
+            --host 127.0.0.1 \
+            --port 8000 \
+            > verification-artifacts/uvicorn-first.log 2>&1 &
+          echo $! > verification-artifacts/uvicorn-first.pid
+
+          python - <<'PY'
+          import time
+          import httpx
+
+          last_error = None
+          for _ in range(40):
+              try:
+                  response = httpx.get("http://127.0.0.1:8000/health", timeout=2.0)
+                  if response.status_code == 200:
+                      print("First API process became ready")
+                      raise SystemExit(0)
+                  last_error = f"HTTP {response.status_code}: {response.text}"
+              except Exception as exc:
+                  last_error = repr(exc)
+              time.sleep(0.5)
+
+          print(f"First API process did not become ready: {last_error}")
+          raise SystemExit(1)
+          PY
+
+      - name: Create durable records in first process
+        id: prepare
+        if: steps.api_first.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python .github/scripts/block0_verify_restart.py \
+            --phase prepare \
+            --base-url http://127.0.0.1:8000 \
+            --state-file verification-artifacts/restart-state.json \
+            --output-dir verification-artifacts \
+            2>&1 | tee verification-artifacts/prepare-console.txt
+
+      - name: Stop first Uvicorn process
+        id: stop_first
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f verification-artifacts/uvicorn-first.pid ]]; then
+            pid="$(cat verification-artifacts/uvicorn-first.pid)"
+            kill "$pid" || true
+            wait "$pid" 2>/dev/null || true
+          fi
+          sleep 1
+          python - <<'PY'
+          import httpx
+
+          try:
+              response = httpx.get("http://127.0.0.1:8000/health", timeout=1.0)
+          except Exception:
+              print("First API process is stopped")
+              raise SystemExit(0)
+
+          print(f"Port still answered after stop: HTTP {response.status_code}")
+          raise SystemExit(1)
+          PY
+
+      - name: Start second Uvicorn process with existing SQLite schema
+        id: api_second
+        if: steps.prepare.outcome == 'success' && steps.stop_first.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        env:
+          ASTRYNN_AUTO_CREATE_SCHEMA: "false"
+        run: |
+          set -euo pipefail
+          test -s "$DATABASE_PATH"
+          nohup uvicorn astrynn_devforge.api:app \
+            --host 127.0.0.1 \
+            --port 8000 \
+            > verification-artifacts/uvicorn-second.log 2>&1 &
+          echo $! > verification-artifacts/uvicorn-second.pid
+
+          python - <<'PY'
+          import time
+          import httpx
+
+          last_error = None
+          for _ in range(40):
+              try:
+                  response = httpx.get("http://127.0.0.1:8000/health", timeout=2.0)
+                  if response.status_code == 200:
+                      print("Second API process became ready")
+                      raise SystemExit(0)
+                  last_error = f"HTTP {response.status_code}: {response.text}"
+              except Exception as exc:
+                  last_error = repr(exc)
+              time.sleep(0.5)
+
+          print(f"Second API process did not become ready: {last_error}")
+          raise SystemExit(1)
+          PY
+
+      - name: Verify durable and volatile state after restart
+        id: verify
+        if: steps.api_second.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          python .github/scripts/block0_verify_restart.py \
+            --phase verify \
+            --base-url http://127.0.0.1:8000 \
+            --state-file verification-artifacts/restart-state.json \
+            --output-dir verification-artifacts \
+            2>&1 | tee verification-artifacts/verify-console.txt
+
+      - name: Stop second Uvicorn process
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -f verification-artifacts/uvicorn-second.pid ]]; then
+            pid="$(cat verification-artifacts/uvicorn-second.pid)"
+            kill "$pid" || true
+            wait "$pid" 2>/dev/null || true
+          fi
+
+      - name: Copy SQLite evidence into artifact directory
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -f "$DATABASE_PATH" ]]; then
+            cp "$DATABASE_PATH" verification-artifacts/verification-restart.db
+            sha256sum "$DATABASE_PATH" | tee verification-artifacts/sqlite-sha256.txt
+            ls -l "$DATABASE_PATH" | tee verification-artifacts/sqlite-file.txt
+          fi
+
+      - name: Build verification summary
+        if: always()
+        shell: bash
+        env:
+          ENVIRONMENT_OUTCOME: ${{ steps.environment.outcome }}
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          RUFF_OUTCOME: ${{ steps.ruff.outcome }}
+          PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
+          API_FIRST_OUTCOME: ${{ steps.api_first.outcome }}
+          PREPARE_OUTCOME: ${{ steps.prepare.outcome }}
+          STOP_FIRST_OUTCOME: ${{ steps.stop_first.outcome }}
+          API_SECOND_OUTCOME: ${{ steps.api_second.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          {
+            echo "# Block 0 Restart Persistence Verification"
+            echo
+            echo "| Stage | GitHub Actions outcome |"
+            echo "|---|---|"
+            echo "| Clean environment | $ENVIRONMENT_OUTCOME |"
+            echo "| Installation | $INSTALL_OUTCOME |"
+            echo "| Ruff | $RUFF_OUTCOME |"
+            echo "| pytest | $PYTEST_OUTCOME |"
+            echo "| First API startup | $API_FIRST_OUTCOME |"
+            echo "| Create durable records | $PREPARE_OUTCOME |"
+            echo "| First API fully stopped | $STOP_FIRST_OUTCOME |"
+            echo "| Second API startup | $API_SECOND_OUTCOME |"
+            echo "| Post-restart verification | $VERIFY_OUTCOME |"
+            echo
+            echo "The artifact contains both Uvicorn logs, the SQLite file and detailed reports."
+          } | tee verification-artifacts/actions-summary.md
+
+          cat verification-artifacts/actions-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f verification-artifacts/block0-restart-persistence-results.md ]]; then
+            echo >> "$GITHUB_STEP_SUMMARY"
+            cat verification-artifacts/block0-restart-persistence-results.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: block0-restart-persistence-${{ github.run_number }}
+          path: verification-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce verification result
+        if: always()
+        shell: bash
+        env:
+          ENVIRONMENT_OUTCOME: ${{ steps.environment.outcome }}
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          RUFF_OUTCOME: ${{ steps.ruff.outcome }}
+          PYTEST_OUTCOME: ${{ steps.pytest.outcome }}
+          API_FIRST_OUTCOME: ${{ steps.api_first.outcome }}
+          PREPARE_OUTCOME: ${{ steps.prepare.outcome }}
+          STOP_FIRST_OUTCOME: ${{ steps.stop_first.outcome }}
+          API_SECOND_OUTCOME: ${{ steps.api_second.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          failures=0
+          for outcome in \
+            "$ENVIRONMENT_OUTCOME" \
+            "$INSTALL_OUTCOME" \
+            "$RUFF_OUTCOME" \
+            "$PYTEST_OUTCOME" \
+            "$API_FIRST_OUTCOME" \
+            "$PREPARE_OUTCOME" \
+            "$STOP_FIRST_OUTCOME" \
+            "$API_SECOND_OUTCOME" \
+            "$VERIFY_OUTCOME"; do
+            if [[ "$outcome" != "success" ]]; then
+              failures=$((failures + 1))
+            fi
+          done
+
+          if [[ "$failures" -gt 0 ]]; then
+            echo "$failures restart persistence stage(s) did not complete successfully."
+            exit 1
+          fi
+
+          echo "All restart persistence verification stages completed successfully."
