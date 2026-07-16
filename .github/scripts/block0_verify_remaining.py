@@ -333,7 +333,6 @@ def main() -> int:
 
     org_id = os.environ["ORG_ID"]
     owner_id = os.environ["OWNER_ID"]
-    reviewer_id = os.environ["REVIEWER_ID"]
     owner_token = os.environ["OWNER_TOKEN"]
     reviewer_token = os.environ["REVIEWER_TOKEN"]
     auditor_token = os.environ["AUDITOR_TOKEN"]
