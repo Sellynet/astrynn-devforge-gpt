@@ -1,0 +1,79 @@
+name: Block 0 README Clean-room Verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "README.md"
+      - ".github/workflows/block0-readme-cleanroom.yml"
+      - "src/**"
+      - "tests/**"
+      - "setup.cfg"
+      - "setup.py"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Clone and run using only README
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out README source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Extract executable clean-room block from README
+        run: |
+          awk '
+            /# README-CLEANROOM-START/ { capture=1; next }
+            /# README-CLEANROOM-END/ { capture=0 }
+            capture { print }
+          ' README.md > /tmp/readme-cleanroom.sh
+
+          test -s /tmp/readme-cleanroom.sh
+          grep -q 'git clone' /tmp/readme-cleanroom.sh
+          grep -q 'uvicorn astrynn_devforge.api:app' /tmp/readme-cleanroom.sh
+          grep -q '/api/v1/aegis/cases/' /tmp/readme-cleanroom.sh
+          chmod +x /tmp/readme-cleanroom.sh
+
+      - name: Execute README in a clean directory
+        env:
+          ASTRYNN_REF: ${{ github.head_ref || github.ref_name }}
+          WORKDIR: /tmp/astrynn-readme-cleanroom
+          EVIDENCE_DIR: /tmp/readme-cleanroom-artifacts
+        run: |
+          bash /tmp/readme-cleanroom.sh 2>&1 | tee /tmp/readme-cleanroom-console.txt
+
+      - name: Assemble evidence
+        if: always()
+        run: |
+          mkdir -p /tmp/readme-cleanroom-artifacts
+          cp /tmp/readme-cleanroom.sh /tmp/readme-cleanroom-artifacts/extracted-readme-cleanroom.sh
+          if [ -f /tmp/readme-cleanroom-console.txt ]; then
+            cp /tmp/readme-cleanroom-console.txt /tmp/readme-cleanroom-artifacts/console.txt
+          fi
+          {
+            echo "workflow=Block 0 README Clean-room Verification"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_number=${GITHUB_RUN_NUMBER}"
+            echo "head_ref=${GITHUB_HEAD_REF}"
+            echo "ref_name=${GITHUB_REF_NAME}"
+            echo "sha=${GITHUB_SHA}"
+            echo "python=$(python --version 2>&1)"
+          } > /tmp/readme-cleanroom-artifacts/environment.txt
+
+      - name: Upload README clean-room evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: block0-readme-cleanroom-${{ github.run_number }}
+          path: /tmp/readme-cleanroom-artifacts
+          retention-days: 30
+          if-no-files-found: error
