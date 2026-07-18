@@ -1,10 +1,11 @@
 # VERIFICATION.md · Bloque 0 · Verificación del prototipo
 
-Fecha de apertura: 2026-07-16
+Fecha de apertura: 2026-07-16  
+Última actualización: 2026-07-18
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO VERIFICADOS`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO VERIFICADOS`
 
 ## 1. Regla de evidencia
 
@@ -15,13 +16,13 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. Siguen pendientes la pasada humana nominal en Swagger, PostgreSQL/Supabase, persistencia operativa OAAA, lectura humana de tests, revisión de gaps entre Pull Requests y commits y revisión humana nominal de la evidencia global.
+Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger ya está completada. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, lectura humana de tests, revisión de gaps entre Pull Requests y commits, resolución o aceptación formal del warning y revisión humana nominal de la evidencia global.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
 ## 2. Resumen de ejecuciones válidas
 
-### R-002 · Primeros ocho endpoints
+### R-002 · Primeros ocho endpoints automatizados
 
 - Workflow: `Block 0 Human Verification`
 - Run ID: `29487356386`
@@ -66,7 +67,6 @@ No se utilizaron datos reales, secretos ni credenciales de clientes.
 - Workflow: `Block 0 Restart Persistence Verification`
 - Run ID: `29499245290`
 - Run number: `5`
-- Head de la rama: `7b5feda97ac744106cf689320627d2cf72fc32f9`
 - Python: `3.11.15`
 - Ruff: `All checks passed!`
 - pytest: `113 passed, 1 warning in 2.58s`
@@ -82,7 +82,6 @@ No se utilizaron datos reales, secretos ni credenciales de clientes.
 - Run ID: `29504297700`
 - Run number: `1`
 - Rama clonada: `verification/block-0-readme-cleanroom`
-- Head evaluado: `bcf0301f622794239334797a3e81da1aef308b95`
 - Python: `3.11.15`
 - Ruff: `All checks passed!`
 - pytest: `113 passed, 1 warning in 2.55s`
@@ -93,35 +92,73 @@ No se utilizaron datos reales, secretos ni credenciales de clientes.
 
 Clasificación del README: `FUNCIONA VERIFICADO · CLEAN-ROOM AUTOMATIZADO`.
 
-La observación humana nominal en Swagger continúa como `PENDIENTE`.
+### R-007 · Pasada humana nominal en Swagger
+
+- Fecha: `2026-07-18`
+- Entorno: GitHub Codespaces `cautious-waffle`
+- Rama observada: `main`
+- Python: `3.12.1`
+- Navegador: Chrome sobre Windows 11
+- Ruff: `All checks passed!`
+- pytest: `113 passed, 1 warning in 4.37s`
+- Swagger: puerto privado reenviado `8000`
+- Resultado: `8/8 FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL`
+- Case ID sintético: `b428c5ea-0dd6-4e51-890c-176f6ea34eac`
+- Aprobación observada: `APPROVE_WITH_CONDITIONS`
+- Aegis observado: `APTO`, `total_score=9`
+- Informe: `docs/verification/BLOCK0_HUMAN_SWAGGER_2026-07-18.md`
+
+La observación humana nominal en Swagger queda como `FUNCIONA VERIFICADO`.
 
 ## 3. Endpoints verificados
 
-| ID | Endpoint | HTTP | Estado |
-|---|---|---:|---|
-| E-001 | `GET /health` | 200 | `FUNCIONA VERIFICADO` |
-| E-002 | `GET /api/v1/me` | 200 | `FUNCIONA VERIFICADO` |
-| E-003 | `POST /api/v1/cases` | 201 | `FUNCIONA VERIFICADO` |
-| E-004 | `GET /api/v1/cases` | 200 | `FUNCIONA VERIFICADO` |
-| E-005 | `GET /api/v1/cases/{case_id}` | 200 | `FUNCIONA VERIFICADO` |
-| E-006 | `POST /api/v1/cases/{case_id}/transition` | 200 | `FUNCIONA VERIFICADO` |
-| E-007 | `POST /api/v1/cases/{case_id}/approvals` | 201 | `FUNCIONA VERIFICADO` |
-| E-008 | `POST /api/v1/aegis/cases/{case_id}/clearance/evaluate` | 200 | `FUNCIONA VERIFICADO` |
-| E-009 | `POST /api/v1/aegis/cases/{case_id}/clearance/record` | 201 | `FUNCIONA VERIFICADO` |
-| E-010 | `POST /api/v1/atlas/cases/{case_id}/briefing/build` | 200 | `FUNCIONA VERIFICADO` |
-| E-011 | `POST /api/v1/atlas/cases/{case_id}/briefing/record` | 201 | `FUNCIONA VERIFICADO` |
-| E-012 | `POST /api/v1/oaaa/cases/{case_id}/blueprints` | 201 | `FUNCIONA VERIFICADO` |
-| E-013 | `GET /api/v1/oaaa/blueprints/{blueprint_id}` | 200 | `FUNCIONA VERIFICADO` |
-| E-014 | `GET /api/v1/oaaa/blueprints/{blueprint_id}/versions` | 200 | `FUNCIONA VERIFICADO` |
-| E-015 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/revisions` | 201 | `FUNCIONA VERIFICADO` |
-| E-016 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/submit` | 200 | `FUNCIONA VERIFICADO` |
+| ID | Endpoint | HTTP | Automático | Humano Swagger |
+|---|---|---:|---|---|
+| E-001 | `GET /health` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-002 | `GET /api/v1/me` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-003 | `POST /api/v1/cases` | 201 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-004 | `GET /api/v1/cases` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-005 | `GET /api/v1/cases/{case_id}` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-006 | `POST /api/v1/cases/{case_id}/transition` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-007 | `POST /api/v1/cases/{case_id}/approvals` | 201 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-008 | `POST /api/v1/aegis/cases/{case_id}/clearance/evaluate` | 200 | `FUNCIONA VERIFICADO` | `FUNCIONA VERIFICADO` |
+| E-009 | `POST /api/v1/aegis/cases/{case_id}/clearance/record` | 201 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-010 | `POST /api/v1/atlas/cases/{case_id}/briefing/build` | 200 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-011 | `POST /api/v1/atlas/cases/{case_id}/briefing/record` | 201 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-012 | `POST /api/v1/oaaa/cases/{case_id}/blueprints` | 201 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-013 | `GET /api/v1/oaaa/blueprints/{blueprint_id}` | 200 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-014 | `GET /api/v1/oaaa/blueprints/{blueprint_id}/versions` | 200 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-015 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/revisions` | 201 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
+| E-016 | `POST /api/v1/oaaa/blueprints/{blueprint_id}/submit` | 200 | `FUNCIONA VERIFICADO` | `NO INCLUIDO EN PASADA HUMANA` |
 
-## 4. Controles negativos verificados
+## 4. Resultado de la pasada humana
+
+La persona operadora observó en Swagger:
+
+- salud de la API y límites declarados;
+- identidad `CASE_OWNER` derivada del token;
+- creación y recuperación del caso sintético;
+- presencia del caso en el listado;
+- transición `DRAFT → IN_REVIEW`;
+- cambio de identidad a `REVIEWER`;
+- aprobación `APPROVE_WITH_CONDITIONS`;
+- regreso a `CASE_OWNER`;
+- evaluación Aegis `APTO` con puntuación total `9`.
+
+### Fricción Swagger
+
+El primer intento de aprobación devolvió HTTP 422 porque el editor contenía dos objetos JSON concatenados: el ejemplo generado y el cuerpo introducido. La sustitución completa por un único objeto válido produjo HTTP 201.
+
+Clasificación: `FRICCIÓN DE INTERFAZ / ENTRADA HUMANA · NO FALLO DE API`.
+
+La búsqueda textual del navegador tampoco localizó de forma fiable algunas etiquetas de endpoints dentro de Swagger. Se navegó directamente por la sección `kernel`.
+
+## 5. Controles negativos verificados
 
 ### Autenticación e identidad
 
 - token ausente e inválido rechazados con 401;
-- `actor_id`, `owner_id` y `organization_id` falsificables rechazados;
+- spoofing de `actor_id`, `owner_id` y `organization_id` rechazado;
 - identidad derivada del principal autenticado.
 
 ### Aislamiento y least privilege
@@ -143,26 +180,24 @@ La observación humana nominal en Swagger continúa como `PENDIENTE`.
 - `DRAFT → ACTIVE` rechazado;
 - envío OAAA duplicado rechazado;
 - endpoint OAAA `activate` inexistente;
-- score 6 rechazado;
+- score fuera de rango rechazado;
 - specialist trigger fuerza revisión especializada;
 - critical blocker impide `APTO`;
 - Atlas rechaza referencias rotas;
 - OAAA rechaza wildcards y planes ARIA incompletos.
 
-## 5. Persistencia tras reinicio
+## 6. Persistencia tras reinicio
 
-La ejecución utilizó dos procesos Uvicorn distintos y el mismo archivo SQLite.
-
-Sobrevivieron sin cambios:
+Sobrevivieron con el mismo SQLite:
 
 - case ID y estado `APPROVED`;
 - versión interna Kernel `5`;
-- cuatro eventos con los mismos IDs;
-- una aprobación con el mismo ID;
-- cuatro outputs con los mismos IDs;
-- seis evidencias con los mismos IDs.
+- cuatro eventos;
+- una aprobación;
+- cuatro outputs;
+- seis evidencias.
 
-Las filas físicas posteriores coincidieron con el baseline previo:
+Filas físicas posteriores:
 
 ```json
 {
@@ -180,42 +215,28 @@ El caso recuperado volvió a producir `APTO` con puntuación total `9`.
 
 - estado operativo OAAA: volátil en `InMemoryAgentBlueprintRepository`;
 - rastro de auditoría OAAA: persistente en Kernel;
-- el blueprint anterior devuelve `404 Blueprint not found` tras reiniciar;
-- persisten outputs y evidencias de sus versiones.
+- el blueprint operativo devuelve `404 Blueprint not found` tras reiniciar;
+- outputs y evidencias de sus versiones permanecen.
 
-## 6. README y reproducibilidad
+## 7. README y reproducibilidad
 
-El README contiene ahora:
-
-- requisitos;
-- clonación y selección de rama;
-- entorno virtual;
-- instalación;
-- Ruff y pytest;
-- tokens sintéticos owner/reviewer;
-- SQLite;
-- Uvicorn;
-- Swagger;
-- primeros ocho endpoints;
-- reinicio y persistencia;
-- plantilla de fricciones;
-- límites productivos.
+El README contiene requisitos, clonación, entorno virtual, instalación, Ruff, pytest, tokens sintéticos, SQLite, Uvicorn, Swagger, primeros ocho endpoints, reinicio, persistencia, plantilla de fricciones y límites productivos.
 
 El workflow extrajo el bloque ejecutable directamente del README y completó el recorrido desde un clon limpio.
 
-### Fricciones README
+Fricciones conocidas:
 
 - `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`: `StarletteDeprecationWarning` relacionado con `httpx` y `starlette.testclient`.
-- `DUDOSO · COSMÉTICO NO BLOQUEANTE`: la ruta absoluta de evidencias se imprimió concatenada con el directorio de trabajo en el mensaje final del runner. Los archivos se guardaron correctamente.
-- `PENDIENTE`: pasada humana nominal en Swagger desde un ordenador físico.
+- `DUDOSO · COSMÉTICO NO BLOQUEANTE`: presentación incorrecta de la ruta absoluta de evidencias en el mensaje final del runner, sin pérdida de archivos.
+- `RESUELTO`: pasada humana nominal en Swagger desde un ordenador físico.
 
-## 7. Hallazgos abiertos
+## 8. Hallazgos abiertos
 
 ### OAAA operativo
 
 Estado: `DUDOSO · CAPACIDAD PRODUCTIVA NO CONSTRUIDA`.
 
-El blueprint operativo se pierde al reiniciar. El rastro de auditoría durable no sustituye una persistencia operativa de blueprints y versiones.
+El blueprint operativo se pierde al reiniciar. El rastro durable no sustituye la persistencia operativa de blueprints y versiones.
 
 ### PostgreSQL/Supabase
 
@@ -229,34 +250,36 @@ Estado: `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`.
 
 Debe resolverse o aceptarse formalmente con versión y fecha de revisión.
 
-### Ejecución humana nominal
+### Lectura humana de tests y evidencia global
 
 Estado: `PENDIENTE`.
 
-La clean-room automatizada no debe presentarse como una persona introduciendo cada petición y observando Swagger.
+La ejecución humana de Swagger no sustituye la lectura crítica del código de tests ni la revisión nominal del conjunto completo de evidencias.
 
-## 8. Intentos de harness descartados
+## 9. Intentos descartados o corregidos
 
 - Run negativo `29495923583`: criterio textual demasiado estricto para HTTP 403. Corregido.
 - Run reinicio `29498525073`: SQLite contaminó pytest y se intentaron leer campos no expuestos. Corregido.
 - Run reinicio `29498940953`: expectativa fija de artefactos incorrecta. Corregido con baseline dinámico.
+- Primer intento humano de aprobación: dos objetos JSON concatenados en Swagger, HTTP 422. Corregido mediante reemplazo completo; repetición HTTP 201.
 
-Clasificación común: `FALLA DEL HARNESS · CORREGIDA`.
+Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El último es `FRICCIÓN DE INTERFAZ / ENTRADA HUMANA · CORREGIDA`.
 
-## 9. Pendientes para cerrar el Bloque 0
+## 10. Pendientes para cerrar el Bloque 0 completo
 
-1. Ejecutar la pasada humana nominal de los primeros ocho endpoints en Swagger.
-2. Construir persistencia operativa OAAA y verificar su supervivencia.
-3. Repetir persistencia Kernel con PostgreSQL/Supabase.
-4. Leer manualmente los tests y valorar calidad, relevancia y cobertura real.
-5. Revisar gaps entre Pull Requests y commits.
-6. Resolver o aceptar formalmente el warning de Starlette/httpx.
-7. Obtener revisión humana nominal de la evidencia global.
+1. Construir persistencia operativa OAAA y verificar su supervivencia.
+2. Repetir persistencia Kernel con PostgreSQL/Supabase.
+3. Leer manualmente los tests y valorar calidad, relevancia y cobertura real.
+4. Revisar gaps entre Pull Requests y commits.
+5. Resolver o aceptar formalmente el warning de Starlette/httpx.
+6. Obtener revisión humana nominal de la evidencia global.
 
-## 10. Conclusión
+La pasada humana Swagger deja de figurar como pendiente.
 
-La reproducibilidad documental del README queda verificada en clean-room. Los 16 endpoints, los 22 controles negativos y los 20 controles de persistencia tras reinicio quedan como `FUNCIONA VERIFICADO` dentro de ejecuciones reproducibles.
+## 11. Conclusión
 
-Esto no demuestra todavía observación humana nominal, identidad productiva, PostgreSQL/Supabase, persistencia operativa OAAA, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.
+La reproducibilidad documental del README, los 16 endpoints automáticos, los 22 controles negativos y los 20 controles de persistencia quedan como `FUNCIONA VERIFICADO`.
 
-El siguiente movimiento para cerrar las tres instrucciones originales es una pasada humana en Swagger desde un ordenador disponible.
+Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger.
+
+Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, persistencia operativa OAAA, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.
