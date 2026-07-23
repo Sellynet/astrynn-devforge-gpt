@@ -15,10 +15,10 @@ from astrynn_devforge.kernel import (
 
 from .enums import AutonomyLevel, BlueprintStatus, HumanDecision
 from .models import (
-    ARIATestRequirement,
     ActivationReceipt,
     AgentBlueprintVersion,
     ApprovalPoint,
+    ARIATestRequirement,
     DataBoundary,
     HumanApprovalRecord,
     ToolPermission,
@@ -313,11 +313,13 @@ class OAAAAgentBlueprintService:
             raise ValueError("Conditional approval requires explicit conditions")
 
         case = self.kernel_repository.get_case(latest.case_id)
-        if case.sensitivity in {Sensitivity.ORANGE, Sensitivity.RED}:
-            if approver_id == latest.owner_id:
-                raise BlueprintApprovalError(
-                    "ORANGE and RED blueprints require separation between owner and approver"
-                )
+        if (
+            case.sensitivity in {Sensitivity.ORANGE, Sensitivity.RED}
+            and approver_id == latest.owner_id
+        ):
+            raise BlueprintApprovalError(
+                "ORANGE and RED blueprints require separation between owner and approver"
+            )
         if latest.vault_artifact_id is None:
             raise BlueprintTransitionError("Blueprint is not linked to Output Vault")
 

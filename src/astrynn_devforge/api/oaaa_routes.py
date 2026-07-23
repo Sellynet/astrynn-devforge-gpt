@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException, Request, status
 
 from astrynn_devforge.kernel import CaseNotFoundError
 from astrynn_devforge.oaaa import (
-    ARIATestRequirement,
     ApprovalPoint,
+    ARIATestRequirement,
     BlueprintApprovalError,
     BlueprintNotFoundError,
     BlueprintTransitionError,
@@ -30,7 +30,6 @@ from .oaaa_schemas import (
     OAAABlueprintRevisionRequest,
     OAAABlueprintSubmitRequest,
 )
-
 
 router = APIRouter(prefix="/api/v1/oaaa", tags=["oaaa"])
 

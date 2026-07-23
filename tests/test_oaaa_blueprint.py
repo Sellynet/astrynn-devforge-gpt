@@ -15,9 +15,9 @@ from astrynn_devforge.kernel import (
     Sensitivity,
 )
 from astrynn_devforge.oaaa import (
+    ApprovalPoint,
     ARIATestFamily,
     ARIATestRequirement,
-    ApprovalPoint,
     AutonomyLevel,
     BlueprintApprovalError,
     BlueprintStatus,

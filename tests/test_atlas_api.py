@@ -8,7 +8,6 @@ from astrynn_devforge.api import create_app
 from astrynn_devforge.api.auth import AuthRole, Principal
 from astrynn_devforge.api.container import build_container
 
-
 ORG_A = uuid4()
 ORG_B = uuid4()
 OWNER_A = Principal(uuid4(), ORG_A, AuthRole.CASE_OWNER, "Owner A")

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from hashlib import sha256
-import json
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -11,7 +11,6 @@ from astrynn_devforge.aegis import ClearanceDecision
 from astrynn_devforge.kernel import Sensitivity
 
 from .enums import ARIATestFamily, AutonomyLevel, BlueprintStatus, HumanDecision
-
 
 _FORBIDDEN_ACTION_FRAGMENTS = (
     "approve own",
@@ -252,12 +251,13 @@ class AgentBlueprintVersion:
             BlueprintStatus.CLEARED,
             BlueprintStatus.APPROVED,
             BlueprintStatus.ACTIVE,
-        }:
-            if self.clearance_result_id is None or self.clearance_decision is None:
-                raise ValueError(f"Status {self.status.value} requires a recorded Aegis clearance")
-        if self.status in {BlueprintStatus.APPROVED, BlueprintStatus.ACTIVE}:
-            if self.human_approval_id is None:
-                raise ValueError(f"Status {self.status.value} requires named human approval")
+        } and (self.clearance_result_id is None or self.clearance_decision is None):
+            raise ValueError(f"Status {self.status.value} requires a recorded Aegis clearance")
+        if (
+            self.status in {BlueprintStatus.APPROVED, BlueprintStatus.ACTIVE}
+            and self.human_approval_id is None
+        ):
+            raise ValueError(f"Status {self.status.value} requires named human approval")
         if (
             self.clearance_decision == ClearanceDecision.APTO_CON_CONTROLES
             and not self.clearance_conditions

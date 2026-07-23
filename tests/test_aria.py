@@ -4,10 +4,10 @@ import pytest
 
 from astrynn_devforge.aegis import ClearanceDecision, ClearanceResult
 from astrynn_devforge.aria import (
+    ARIAFinalizationError,
     ARIAFindingDisposition,
     ARIAFindingInput,
     ARIAFindingSeverity,
-    ARIAFinalizationError,
     ARIAStaleBlueprintError,
     ARIATestOutcome,
     ARIATestRegisterService,
@@ -26,9 +26,9 @@ from astrynn_devforge.kernel import (
     Sensitivity,
 )
 from astrynn_devforge.oaaa import (
+    ApprovalPoint,
     ARIATestFamily,
     ARIATestRequirement,
-    ApprovalPoint,
     AutonomyLevel,
     BlueprintApprovalError,
     BlueprintStatus,

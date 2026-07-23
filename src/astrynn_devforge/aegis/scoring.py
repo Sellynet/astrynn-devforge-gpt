@@ -7,7 +7,6 @@ from .enums import (
 )
 from .models import AIUseCase, GuardrailRecommendation
 
-
 _CRITICAL_DIMENSIONS = {
     RiskDimension.DATA,
     RiskDimension.PERMISSIONS,

@@ -30,7 +30,6 @@ from .auth import (
     require_permission,
 )
 
-
 router = APIRouter(prefix="/api/v1/atlas", tags=["atlas"])
 
 

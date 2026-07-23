@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from astrynn_devforge.aegis import AIUseCase, AegisClearanceService, RiskScores
+from astrynn_devforge.aegis import AegisClearanceService, AIUseCase, RiskScores
 from astrynn_devforge.kernel import CaseNotFoundError
 
 from .aegis_schemas import (
@@ -20,7 +20,6 @@ from .auth import (
     require_organization_access,
     require_permission,
 )
-
 
 router = APIRouter(prefix="/api/v1/aegis", tags=["aegis"])
 _service = AegisClearanceService()

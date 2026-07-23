@@ -66,7 +66,7 @@ cd "$WORKDIR"
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -e . ruff pytest
+pip install -e . ruff==0.16.0 pytest
 
 ruff check .
 pytest -q
@@ -284,7 +284,7 @@ Comandos independientes:
 
 ```bash
 python -m pip install --upgrade pip
-pip install -e . ruff pytest
+pip install -e . ruff==0.16.0 pytest
 ruff check .
 pytest -q
 ```

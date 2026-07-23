@@ -6,7 +6,11 @@ from .repository import (
     DuplicateArtifactVersionError,
     InMemoryOutputVaultRepository,
 )
-from .service import InvalidArtifactTransitionError, OutputVaultService, VaultApprovalError
+from .service import (
+    InvalidArtifactTransitionError,
+    OutputVaultService,
+    VaultApprovalError,
+)
 
 __all__ = [
     "ArtifactNotFoundError",

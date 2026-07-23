@@ -3,8 +3,8 @@ from uuid import uuid4
 import pytest
 
 from astrynn_devforge.aegis import (
-    AIUseCase,
     AegisClearanceService,
+    AIUseCase,
     ClearanceDecision,
     RiskScores,
     SpecialistReviewTrigger,

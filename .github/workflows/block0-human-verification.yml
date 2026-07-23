@@ -63,7 +63,7 @@ jobs:
         run: |
           set -o pipefail
           python -m pip install --upgrade pip 2>&1 | tee verification-artifacts/install.txt
-          pip install -e . ruff pytest 2>&1 | tee -a verification-artifacts/install.txt
+          pip install -e . ruff==0.16.0 pytest 2>&1 | tee -a verification-artifacts/install.txt
 
       - name: Run Ruff
         id: ruff
