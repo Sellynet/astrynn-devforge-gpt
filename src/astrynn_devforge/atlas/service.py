@@ -195,7 +195,7 @@ class OrbynAtlasService:
             if not tuple(items):
                 raise AtlasValidationError(f"At least one {label} is required")
             for item in items:
-                if getattr(item, "case_id") != case_id:
+                if item.case_id != case_id:
                     raise AtlasValidationError(
                         f"{label.capitalize()} belongs to a different Kernel case"
                     )

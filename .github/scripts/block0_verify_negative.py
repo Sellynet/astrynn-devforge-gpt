@@ -4,13 +4,13 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from uuid import uuid4
 
 import httpx
-
 from block0_verify_remaining import (
     CheckResult,
     atlas_payload,
@@ -21,7 +21,6 @@ from block0_verify_remaining import (
     doubtful,
     safe_json,
 )
-
 
 CheckBuilder = Callable[[httpx.Response, Any], list[tuple[bool, str]]]
 

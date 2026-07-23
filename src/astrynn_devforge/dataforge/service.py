@@ -148,9 +148,11 @@ class OutputVaultService:
             )
         if not latest.evidence_references:
             raise VaultApprovalError("A decision requires at least one evidence reference")
-        if decision in {VaultDecision.APPROVED, VaultDecision.APPROVED_WITH_CONDITIONS}:
-            if not latest.test_references:
-                raise VaultApprovalError("Approval requires at least one test reference")
+        if (
+            decision in {VaultDecision.APPROVED, VaultDecision.APPROVED_WITH_CONDITIONS}
+            and not latest.test_references
+        ):
+            raise VaultApprovalError("Approval requires at least one test reference")
 
         status = self._status_for_decision(decision)
         artifact = self._copy_as_new_version(

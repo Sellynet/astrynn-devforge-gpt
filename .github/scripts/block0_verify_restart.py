@@ -5,15 +5,16 @@ import json
 import os
 import sqlite3
 import sys
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from uuid import UUID
 
 import httpx
+from block0_verify_remaining import atlas_payload, blueprint_payload, clearance_payload
 
 from astrynn_devforge.persistence import SQLAlchemyKernelRepository
-from block0_verify_remaining import atlas_payload, blueprint_payload, clearance_payload
 
 
 @dataclass

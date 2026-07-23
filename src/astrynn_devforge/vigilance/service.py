@@ -127,11 +127,13 @@ class VigilancePermissionService:
         self._assert_actor_is_not_subject(approver_id, latest.subject_id)
         if not rationale.strip():
             raise ValueError("Activation rationale is required")
-        if latest.sensitivity in {Sensitivity.ORANGE, Sensitivity.RED}:
-            if approver_id == latest.owner_id:
-                raise PermissionApprovalError(
-                    "ORANGE and RED grants require separation between owner and approver"
-                )
+        if (
+            latest.sensitivity in {Sensitivity.ORANGE, Sensitivity.RED}
+            and approver_id == latest.owner_id
+        ):
+            raise PermissionApprovalError(
+                "ORANGE and RED grants require separation between owner and approver"
+            )
 
         activated_at = utc_now()
         active = self._new_version(

@@ -138,12 +138,17 @@ class InMemoryTokenAuthenticator:
             raise RuntimeError("ASTRYNN_API_TOKENS_JSON must contain valid JSON") from exc
 
         if not isinstance(payload, list):
-            raise RuntimeError("ASTRYNN_API_TOKENS_JSON must be a JSON list")
+            # Startup configuration errors intentionally share one exception contract.
+            raise RuntimeError(  # noqa: TRY004
+                "ASTRYNN_API_TOKENS_JSON must be a JSON list"
+            )
 
         records: dict[str, Principal] = {}
         for item in payload:
             if not isinstance(item, dict):
-                raise RuntimeError("Each token record must be a JSON object")
+                raise RuntimeError(  # noqa: TRY004
+                    "Each token record must be a JSON object"
+                )
             try:
                 token = str(item["token"])
                 principal = Principal(

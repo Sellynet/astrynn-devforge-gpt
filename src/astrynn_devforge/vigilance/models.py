@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from hashlib import sha256
-import json
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -16,7 +16,6 @@ from .enums import (
     PermissionAction,
     PermissionEventType,
 )
-
 
 _SENSITIVE_ACTIONS = {
     PermissionAction.SEND,
@@ -102,9 +101,10 @@ class PermissionGrantVersion:
             raise ValueError("Expiry date must be after grant creation")
         if self.expires_at < self.review_at:
             raise ValueError("Expiry date cannot precede the review date")
-        if self.status == GrantStatus.ACTIVE:
-            if self.approved_by is None or self.activated_at is None:
-                raise ValueError("ACTIVE grants require a named approver and activation time")
+        if self.status == GrantStatus.ACTIVE and (
+            self.approved_by is None or self.activated_at is None
+        ):
+            raise ValueError("ACTIVE grants require a named approver and activation time")
         if self.emergency_disabled and self.status != GrantStatus.SUSPENDED:
             raise ValueError("Emergency-disabled grants must be SUSPENDED")
 

@@ -15,9 +15,9 @@ from astrynn_devforge.dataforge import (
 )
 from astrynn_devforge.kernel import InMemoryKernelRepository, KernelService, Sensitivity
 from astrynn_devforge.oaaa import (
+    ApprovalPoint,
     ARIATestFamily,
     ARIATestRequirement,
-    ApprovalPoint,
     AutonomyLevel,
     DataBoundary,
     HumanDecision,
