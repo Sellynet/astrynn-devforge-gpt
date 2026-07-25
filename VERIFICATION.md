@@ -1,14 +1,14 @@
-# VERIFICATION.md v2 · Bloque 0 · Verificación del prototipo
+# VERIFICATION.md v2.1 · Bloque 0 · Verificación del prototipo
 
 Fecha de apertura: 2026-07-16
 
-Última actualización: 2026-07-23
+Última actualización: 2026-07-25
 
-Versión documental: `2.0`
+Versión documental: `2.1`
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 113/113 TESTS VERIFICADOS`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO`
 
 ## 1. Regla de evidencia
 
@@ -19,7 +19,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger y la lectura crítica individual de los 113 tests ya están completadas. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, corrección de los huecos de cobertura prioritarios, revisión de gaps entre Pull Requests y commits, resolución o aceptación formal del warning y revisión humana nominal de la evidencia global.
+Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger y la lectura crítica individual de los 114 tests están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, los demás huecos prioritarios de cobertura, la revisión de gaps entre Pull Requests y commits y la revisión humana nominal de la evidencia global.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -112,6 +112,45 @@ Clasificación del README: `FUNCIONA VERIFICADO · CLEAN-ROOM AUTOMATIZADO`.
 - Informe: `docs/verification/BLOCK0_HUMAN_SWAGGER_2026-07-18.md`
 
 La observación humana nominal en Swagger queda como `FUNCIONA VERIFICADO`.
+
+
+### R-008 · Invariante de propietario Output Vault y migración a httpx2
+
+- Fecha: `2026-07-25`
+- Rama: `fix/output-vault-owner-invariant`
+- Python: `3.12.1`
+- Ruff: `ruff 0.15.22` · `All checks passed!`
+- Output Vault: `7 passed`
+- Suite completa: `114 passed`
+- Warnings: `0`
+- Statements: `2822/3092` · `91.27 %`
+- Branches: `372/576` · `64.58 %`
+- Cobertura combinada: `87.08 %`
+- FastAPI: `0.139.2`
+- Starlette: `1.3.1`
+- httpx: `0.28.1`
+- httpx2: `2.7.0`
+- Resultado: `FUNCIONA VERIFICADO · REGRESIÓN LOCAL + INSTALACIÓN LIMPIA`
+
+`OutputVaultService.create_draft()` comprueba ahora que el `owner_id`
+suministrado coincide con el propietario del caso Kernel antes de construir
+o persistir el artefacto.
+
+La prueba negativa demuestra que un intento con un propietario distinto:
+
+- lanza `VaultApprovalError`;
+- no crea versiones en Output Vault;
+- no crea outputs en Kernel;
+- no crea evidencias residuales.
+
+La prueba fue ejecutada inicialmente contra la implementación sin corregir
+y falló porque la operación no era rechazada. Después de aplicar la
+invariante, Output Vault pasó `7/7` y la suite completa pasó `114/114`.
+
+El `StarletteDeprecationWarning` quedó resuelto mediante la incorporación
+reproducible de `httpx2==2.7.0`. La instalación desde una
+venv temporal limpia completó Ruff y los 114 tests sin warnings. No se
+silenció ni filtró el warning.
 
 ## 3. Endpoints verificados
 
@@ -229,7 +268,7 @@ El workflow extrajo el bloque ejecutable directamente del README y completó el 
 
 Fricciones conocidas:
 
-- `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`: `StarletteDeprecationWarning` relacionado con `httpx` y `starlette.testclient`.
+- `RESUELTO`: `StarletteDeprecationWarning` eliminado mediante `httpx2==2.7.0` y reproducido desde una instalación limpia sin filtros de warnings.
 - `DUDOSO · COSMÉTICO NO BLOQUEANTE`: presentación incorrecta de la ruta absoluta de evidencias en el mensaje final del runner, sin pérdida de archivos.
 - `RESUELTO`: pasada humana nominal en Swagger desde un ordenador físico.
 
@@ -249,15 +288,15 @@ No se han verificado migraciones, RLS, backups, secretos seguros ni persistencia
 
 ### Warning de dependencias
 
-Estado: `DUDOSO · DEUDA TÉCNICA NO BLOQUEANTE`.
+Estado: `FUNCIONA VERIFICADO · RESUELTO`.
 
-Debe resolverse o aceptarse formalmente con versión y fecha de revisión.
+El warning de compatibilidad entre Starlette `1.3.1` y httpx `0.28.1` quedó eliminado incorporando `httpx2==2.7.0`. La solución fue reproducida en una venv limpia con Ruff verde, `114 passed` y cero warnings. No se utilizaron filtros, exclusiones ni silenciamiento.
 
 ### Lectura humana de tests
 
-Estado: `FUNCIONA VERIFICADO · 113/113 TESTS CLASIFICADOS`.
+Estado: `FUNCIONA VERIFICADO · 114/114 TESTS CLASIFICADOS`.
 
-La auditoría v2 leyó individualmente las 113 funciones de test y las contrastó con las rutas de código instrumentadas. El resultado, la matriz completa y los huecos detectados figuran en la sección 11.
+La auditoría v2.1 mantiene la lectura individual de las 113 funciones originales e incorpora la nueva prueba de regresión, alcanzando 114 funciones de test y las contrastó con las rutas de código instrumentadas. El resultado, la matriz completa y los huecos detectados figuran en la sección 11.
 
 ### Evidencia global
 
@@ -278,14 +317,13 @@ Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El último es `FRICCIÓN
 
 1. Construir persistencia operativa OAAA y verificar su supervivencia.
 2. Repetir persistencia Kernel con PostgreSQL/Supabase.
-3. Convertir los huecos P0 de la auditoría de tests en pruebas de regresión y ejecutarlas.
+3. Continuar convirtiendo los huecos P0 restantes en pruebas de regresión.
 4. Revisar gaps entre Pull Requests y commits.
-5. Resolver o aceptar formalmente el warning de Starlette/httpx.
-6. Obtener revisión humana nominal de la evidencia global.
+5. Obtener revisión humana nominal de la evidencia global.
 
 La pasada humana Swagger y la lectura crítica de los 113 tests dejan de figurar como pendientes.
 
-## 11. Auditoría crítica de la suite · VERIFICATION.md v2
+## 11. Auditoría crítica de la suite · VERIFICATION.md v2.1
 
 ### Alcance y método
 
@@ -311,13 +349,27 @@ Los dos tests de salud se clasifican como sustanciales porque no se limitan a co
 
 La medición se ejecutó con las dependencias no fijadas que resolvía el proyecto en la fecha de auditoría. Complementa, pero no sustituye, los artefactos de CI ya registrados.
 
+
+### Ejecución de regresión v2.1
+
+- Fecha: `2026-07-25`
+- Rama: `fix/output-vault-owner-invariant`
+- pytest Output Vault: `7 passed`
+- pytest completo: `114 passed`
+- Warnings tras incorporar httpx2: `0`
+- Ruff: `ruff 0.15.22` · `All checks passed!`
+- Cobertura de statements: `91.27 %` (`2822/3092`)
+- Cobertura de branches: `64.58 %` (`372/576`)
+- Cobertura combinada: `87.08 %`
+- Resultado: `FUNCIONA VERIFICADO · REGRESIÓN LOCAL Y CLEAN ENVIRONMENT`
+
 ### Resultado cuantitativo
 
 | Clasificación | Tests | Porcentaje |
 |---|---:|---:|
-| `SUSTANCIAL` | 111 | 98,23 % |
-| `TRIVIAL` | 2 | 1,77 % |
-| **Total** | **113** | **100,00 %** |
+| `SUSTANCIAL` | 112 | 98,25 % |
+| `TRIVIAL` | 2 | 1,75 % |
+| **Total** | **114** | **100,00 %** |
 
 Los dos tests triviales son:
 
@@ -340,12 +392,12 @@ Los dos tests triviales son:
 | `tests/test_kernel.py` | 6 | 6 | 0 |
 | `tests/test_oaaa_api.py` | 13 | 13 | 0 |
 | `tests/test_oaaa_blueprint.py` | 10 | 10 | 0 |
-| `tests/test_output_vault.py` | 6 | 6 | 0 |
+| `tests/test_output_vault.py` | 7 | 7 | 0 |
 | `tests/test_sqlalchemy_repository.py` | 7 | 6 | 1 |
 | `tests/test_vigilance.py` | 8 | 8 | 0 |
-| **Total** | **113** | **111** | **2** |
+| **Total** | **114** | **112** | **2** |
 
-### Matriz individual 113/113
+### Matriz individual 114/114
 
 | ID | Test | Clasificación |
 |---|---|---|
@@ -463,6 +515,8 @@ Los dos tests triviales son:
 | T-112 | `tests/test_vigilance.py::test_orange_grant_requires_owner_approver_separation` | `SUSTANCIAL` |
 | T-113 | `tests/test_vigilance.py::test_execution_record_requires_allowed_authorization` | `SUSTANCIAL` |
 
+| T-114 | `tests/test_output_vault.py::test_create_draft_rejects_owner_mismatch_without_residual_records` | `SUSTANCIAL` |
+
 ### Huecos de cobertura detectados
 
 Un hueco significa que no existe un test específico suficiente o que al menos una rama material de la lógica no fue ejecutada en la medición. No implica automáticamente que el código falle; implica que una regresión podría entrar sin ser detectada.
@@ -475,7 +529,7 @@ Un hueco significa que no existe un test específico suficiente o que al menos u
 4. **Vigilance · matriz completa de autorización.** Probar sujeto incorrecto, grant no activo, expirado, revisión vencida, acción denegada o no permitida, recurso vacío o fuera de scope, aprobación ausente, pendiente, denegada y aprobada.
 5. **Vigilance · ciclo de aprobación y revocación.** Probar request sobre grant no activo, requester incorrecto, acción que no requiere aprobación, request obsoleto, fingerprint cambiado, autoaprobación, decisión duplicada o expirada, rationale vacío, `revoke_grant` y ejecución asociada a versión obsoleta.
 6. **ARIA · independencia y finalización.** Probar separación owner/finalizer en ORANGE y RED, decidir si executor/finalizer debe ser también una separación obligatoria, familia fuera del plan, segunda resolución, caso del blueprint cambiado y verdict `PASS_WITH_REMEDIATION`.
-7. **Output Vault · autorización de identidad.** `create_draft` no comprueba actualmente que `owner_id` coincida con el owner del caso Kernel. Debe decidirse la invariant, implementarse y probarse antes de exponer el servicio.
+7. **Output Vault · autorización de identidad.** `RESUELTO EN VERIFICATION.md v2.1`. `create_draft` comprueba que `owner_id` coincide con el owner del caso Kernel antes de cualquier persistencia. La prueba de regresión verifica el rechazo y la ausencia de versiones, outputs y evidencias residuales.
 8. **Output Vault · decisiones.** Separar las pruebas de evidencia ausente y test reference ausente; añadir rechazo, rationale vacío, decisión fuera de `REVIEW`, revisión de lineage superseded y motivo de supersession vacío.
 9. **Persistencia del control plane.** OAAA, ARIA, Vigilance y Output Vault continúan con repositorios in-memory. No existen pruebas de reinicio, transacción o integridad durable para su estado operativo.
 10. **PostgreSQL/Supabase.** No hay prueba real de PostgreSQL, migraciones, RLS, backups, rollback, concurrencia, locking ni recuperación. SQLite no cierra este riesgo.
@@ -537,6 +591,6 @@ Son capacidades pendientes o arquitectura objetivo. Crear tests simulados no aut
 
 La reproducibilidad documental del README, los 16 endpoints automáticos, los 22 controles negativos y los 20 controles de persistencia quedan como `FUNCIONA VERIFICADO`.
 
-Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger. La suite queda clasificada como `111/113 SUSTANCIALES` y `2/113 TRIVIALES`; esta proporción favorable no equivale a cobertura completa.
+Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger. La suite queda clasificada como `112/114 SUSTANCIALES` y `2/114 TRIVIALES`; esta proporción favorable no equivale a cobertura completa.
 
 Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, persistencia operativa OAAA, cobertura completa de ramas, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.

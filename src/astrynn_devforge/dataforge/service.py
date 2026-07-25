@@ -49,6 +49,10 @@ class OutputVaultService:
         change_summary: str = "Initial draft",
     ) -> VaultArtifactVersion:
         case = self.kernel_repository.get_case(case_id)
+        if owner_id != case.owner_id:
+            raise VaultApprovalError(
+                "Output Vault owner_id must match the Kernel case owner"
+            )
         self._assert_sensitivity_allowed(case.sensitivity, sensitivity)
         artifact = VaultArtifactVersion(
             artifact_id=uuid4(),
