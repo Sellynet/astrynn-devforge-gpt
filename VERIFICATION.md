@@ -119,7 +119,8 @@ La observación humana nominal en Swagger queda como `FUNCIONA VERIFICADO`.
 - Fecha: `2026-07-25`
 - Rama: `fix/output-vault-owner-invariant`
 - Python: `3.12.1`
-- Ruff: `ruff 0.15.22` · `All checks passed!`
+- Ruff local: `0.15.22` · `All checks passed!`
+- Ruff instalación limpia: `0.16.0` · `All checks passed!`
 - Output Vault: `7 passed`
 - Suite completa: `114 passed`
 - Warnings: `0`
@@ -296,7 +297,7 @@ El warning de compatibilidad entre Starlette `1.3.1` y httpx `0.28.1` quedó eli
 
 Estado: `FUNCIONA VERIFICADO · 114/114 TESTS CLASIFICADOS`.
 
-La auditoría v2.1 mantiene la lectura individual de las 113 funciones originales e incorpora la nueva prueba de regresión, alcanzando 114 funciones de test y las contrastó con las rutas de código instrumentadas. El resultado, la matriz completa y los huecos detectados figuran en la sección 11.
+La auditoría v2.1 mantiene la lectura individual de las 113 funciones originales e incorpora la nueva prueba de regresión. El conjunto resultante alcanza 114 funciones de test contrastadas con las rutas de código instrumentadas. El resultado, la matriz completa y los huecos detectados figuran en la sección 11.
 
 ### Evidencia global
 
@@ -321,7 +322,7 @@ Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El último es `FRICCIÓN
 4. Revisar gaps entre Pull Requests y commits.
 5. Obtener revisión humana nominal de la evidencia global.
 
-La pasada humana Swagger y la lectura crítica de los 113 tests dejan de figurar como pendientes.
+La pasada humana Swagger y la lectura crítica de los 114 tests dejan de figurar como pendientes.
 
 ## 11. Auditoría crítica de la suite · VERIFICATION.md v2.1
 
@@ -357,7 +358,8 @@ La medición se ejecutó con las dependencias no fijadas que resolvía el proyec
 - pytest Output Vault: `7 passed`
 - pytest completo: `114 passed`
 - Warnings tras incorporar httpx2: `0`
-- Ruff: `ruff 0.15.22` · `All checks passed!`
+- Ruff local: `0.15.22` · `All checks passed!`
+- Ruff instalación limpia: `0.16.0` · `All checks passed!`
 - Cobertura de statements: `91.27 %` (`2822/3092`)
 - Cobertura de branches: `64.58 %` (`372/576`)
 - Cobertura combinada: `87.08 %`
