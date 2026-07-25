@@ -52,6 +52,35 @@ def create_reviewable_draft(vault, case, owner_id):
     )
 
 
+
+def test_create_draft_rejects_owner_mismatch_without_residual_records() -> None:
+    vault, repository, kernel_repository, case, owner_id = build_service()
+    different_owner_id = uuid4()
+
+    assert different_owner_id != owner_id
+
+    with pytest.raises(
+        VaultApprovalError,
+        match="Output Vault owner_id must match the Kernel case owner",
+    ):
+        vault.create_draft(
+            case_id=case.id,
+            owner_id=different_owner_id,
+            created_by=different_owner_id,
+            artifact_type="AEGIS_CLEARANCE_REPORT",
+            title="Unauthorized draft attempt",
+            content={"decision": "APTO"},
+            sensitivity=case.sensitivity,
+            test_references=("test://owner-invariant",),
+            evidence_references=("evidence://owner-invariant",),
+        )
+
+    assert repository.list_latest() == ()
+    assert kernel_repository.outputs_for_case(case.id) == ()
+    assert kernel_repository.evidence_for_case(case.id) == ()
+
+
+
 def test_append_only_lifecycle_creates_receipt_and_kernel_records() -> None:
     vault, repository, kernel_repository, case, owner_id = build_service()
     draft = create_reviewable_draft(vault, case, owner_id)
