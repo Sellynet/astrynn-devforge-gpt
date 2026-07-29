@@ -1,14 +1,14 @@
-# VERIFICATION.md v2.1 · Bloque 0 · Verificación del prototipo
+# VERIFICATION.md v2.2 · Bloque 0 · Verificación del prototipo
 
 Fecha de apertura: 2026-07-16
 
-Última actualización: 2026-07-25
+Última actualización: 2026-07-29
 
-Versión documental: `2.1`
+Versión documental: `2.2`
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO + AUDITORÍA PR/COMMIT 9/9 CERRADA`
 
 ## 1. Regla de evidencia
 
@@ -19,7 +19,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger y la lectura crítica individual de los 114 tests están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, los demás huecos prioritarios de cobertura, la revisión de gaps entre Pull Requests y commits y la revisión humana nominal de la evidencia global.
+Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger, la lectura crítica individual de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, los demás huecos prioritarios de cobertura y la revisión humana nominal de la evidencia global.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -319,10 +319,9 @@ Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El último es `FRICCIÓN
 1. Construir persistencia operativa OAAA y verificar su supervivencia.
 2. Repetir persistencia Kernel con PostgreSQL/Supabase.
 3. Continuar convirtiendo los huecos P0 restantes en pruebas de regresión.
-4. Revisar gaps entre Pull Requests y commits.
-5. Obtener revisión humana nominal de la evidencia global.
+4. Obtener revisión humana nominal de la evidencia global.
 
-La pasada humana Swagger y la lectura crítica de los 114 tests dejan de figurar como pendientes.
+La pasada humana Swagger, la lectura crítica de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits dejan de figurar como pendientes.
 
 ## 11. Auditoría crítica de la suite · VERIFICATION.md v2.1
 
@@ -589,10 +588,61 @@ No se consideran “cubiertas” ni “fallidas” por la suite actual:
 
 Son capacidades pendientes o arquitectura objetivo. Crear tests simulados no autorizaría presentarlas como construidas.
 
-## 12. Conclusión
+## 12. Auditoría de gaps entre issues, Pull Requests y commits · VERIFICATION.md v2.2
+
+### Objetivo y método
+
+- Fecha de revisión: `2026-07-29`.
+- Referencias auditadas: `#15`, `#18`, `#19`, `#21`, `#23`, `#25`, `#26`, `#28` y `#30`.
+- Total revisado: `9/9`.
+- Método: identificar el tipo real de cada referencia, comprobar su estado de cierre, localizar el Pull Request de implementación cuando correspondía, registrar el merge commit y verificar la continuidad hasta `main`.
+- Estado de `main` tomado como referencia: `1c6713c2c64f5ac315ecbc1ae53b8840ceecc9eb`.
+- Resultado global: `FUNCIONA VERIFICADO · TRAZABILIDAD DOCUMENTAL 9/9 · SIN TRABAJO PERDIDO DETECTADO`.
+
+GitHub comparte una única secuencia numérica entre issues y Pull Requests. Por ello, varios números que parecían Pull Requests cerrados sin fusionar eran en realidad issues de implementación cuyo Pull Request ocupaba el número siguiente.
+
+### Matriz de disposición
+
+| Referencia | Tipo real | Disposición | Trazabilidad | Clasificación |
+|---|---|---|---|---|
+| `#15` | Issue | Placeholder creado accidentalmente y cerrado como `not_planned`. No tenía trabajo asociado. | Sin commit ni PR requerido. | `DESCARTADO DELIBERADAMENTE · SIN PÉRDIDA` |
+| `#18` | Issue | Precursor parcialmente duplicado, cerrado como supersedido. | Núcleo cubierto por `#19` y PR `#20`, merge `685499ee7abc6c01128477c0a2f6ef90bde73d3b`. Residuos trasladados a `#46`. | `SUPERSEDIDO · RESIDUO TRAZADO · SIN PÉRDIDA` |
+| `#19` | Issue | P8 completado. | PR `#20`, merge `685499ee7abc6c01128477c0a2f6ef90bde73d3b`. | `COMPLETADO Y FUSIONADO` |
+| `#21` | Issue | P9 completado. | PR `#22`, merge `d059088b007cce62f91f4e81b574b6d831986c7b`. | `COMPLETADO Y FUSIONADO` |
+| `#23` | Issue | P10 completado. | PR `#24`, merge `a6d856cc43877bd3d26063ebd59c62e41ac32d2e`. | `COMPLETADO Y FUSIONADO` |
+| `#25` | Pull Request | Actualización documental sin cambios funcionales. | Fusionado mediante `184e6d5e84c045801768e7c54894c7e1935b4145`. | `PR DOCUMENTAL FUSIONADO` |
+| `#26` | Issue | P11 completado. | PR `#27`, merge `e80c01008cd616ba5e850c4396631f10fd418c16`. | `COMPLETADO Y FUSIONADO` |
+| `#28` | Issue | P12 completado. | PR `#29`, merge `f4bf8777e8eeab42578166a38a153ac0dcccfd52`. | `COMPLETADO Y FUSIONADO` |
+| `#30` | Issue | P13 completado. | PR `#31`, merge `3feb2306ce4bca08d866fe98e7011505ff07467b`. | `COMPLETADO Y FUSIONADO` |
+
+### Continuidad en `main`
+
+El merge de PR `#31`, commit `3feb2306ce4bca08d866fe98e7011505ff07467b`, es ancestro del `main` de referencia. La comparación entre ambos commits mostró:
+
+- `main` por delante: `31` commits;
+- `main` por detrás: `0` commits;
+- merge base: `3feb2306ce4bca08d866fe98e7011505ff07467b`.
+
+Las relaciones de base y merge de los PR `#20`, `#22`, `#24`, `#27`, `#29` y `#31` forman una cadena incorporada progresivamente a `main`. El PR `#25` también consta como fusionado entre P10 y P11.
+
+### Dictamen
+
+- Pull Requests auditados cerrados sin fusionar: `0`.
+- Referencias descartadas deliberadamente: `1`, issue `#15`.
+- Referencias supersedidas con residuos trazados: `1`, issue `#18`.
+- Issues completados mediante Pull Request fusionado: `6`.
+- Pull Requests documentales fusionados: `1`, PR `#25`.
+- Trabajo perdido detectado: `0`.
+- Trabajo residual no perdido: hardening de `#18` trasladado explícitamente a `#46`.
+
+La auditoría cierra el gap documental. No demuestra por sí sola que todas las capacidades estén listas para piloto o producción; únicamente confirma la disposición y continuidad del trabajo asociado a las nueve referencias revisadas.
+
+## 13. Conclusión
 
 La reproducibilidad documental del README, los 16 endpoints automáticos, los 22 controles negativos y los 20 controles de persistencia quedan como `FUNCIONA VERIFICADO`.
 
 Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger. La suite queda clasificada como `112/114 SUSTANCIALES` y `2/114 TRIVIALES`; esta proporción favorable no equivale a cobertura completa.
+
+La auditoría de referencias `#15`, `#18`, `#19`, `#21`, `#23`, `#25`, `#26`, `#28` y `#30` queda cerrada como `9/9`, sin Pull Requests cerrados sin fusionar ni trabajo perdido detectado.
 
 Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, persistencia operativa OAAA, cobertura completa de ramas, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.
