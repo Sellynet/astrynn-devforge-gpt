@@ -10,6 +10,7 @@ from .models import (
     ToolPermission,
 )
 from .repository import (
+    AgentBlueprintRepository,
     BlueprintNotFoundError,
     DuplicateBlueprintVersionError,
     InMemoryAgentBlueprintRepository,
@@ -24,6 +25,7 @@ __all__ = [
     "ARIATestFamily",
     "ARIATestRequirement",
     "ActivationReceipt",
+    "AgentBlueprintRepository",
     "AgentBlueprintVersion",
     "ApprovalPoint",
     "AutonomyLevel",
