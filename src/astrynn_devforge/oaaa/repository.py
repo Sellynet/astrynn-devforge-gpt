@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import Protocol
 from uuid import UUID
 
 from .models import ActivationReceipt, AgentBlueprintVersion, HumanApprovalRecord
@@ -12,6 +13,53 @@ class BlueprintNotFoundError(KeyError):
 
 class DuplicateBlueprintVersionError(ValueError):
     pass
+
+
+
+class AgentBlueprintRepository(Protocol):
+    """Persistence contract for append-only OAAA governance state."""
+
+    def append_version(
+        self,
+        blueprint: AgentBlueprintVersion,
+    ) -> AgentBlueprintVersion:
+        ...
+
+    def latest_version(
+        self,
+        blueprint_id: UUID,
+    ) -> AgentBlueprintVersion:
+        ...
+
+    def versions_for_blueprint(
+        self,
+        blueprint_id: UUID,
+    ) -> tuple[AgentBlueprintVersion, ...]:
+        ...
+
+    def append_approval(
+        self,
+        approval: HumanApprovalRecord,
+    ) -> HumanApprovalRecord:
+        ...
+
+    def approvals_for_blueprint(
+        self,
+        blueprint_id: UUID,
+    ) -> tuple[HumanApprovalRecord, ...]:
+        ...
+
+    def append_activation_receipt(
+        self,
+        receipt: ActivationReceipt,
+    ) -> ActivationReceipt:
+        ...
+
+    def activation_receipts_for_blueprint(
+        self,
+        blueprint_id: UUID,
+    ) -> tuple[ActivationReceipt, ...]:
+        ...
 
 
 class InMemoryAgentBlueprintRepository:

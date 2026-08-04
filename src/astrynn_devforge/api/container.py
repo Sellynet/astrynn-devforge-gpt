@@ -13,10 +13,15 @@ from astrynn_devforge.kernel import (
     KernelService,
 )
 from astrynn_devforge.oaaa import (
+    AgentBlueprintRepository,
     InMemoryAgentBlueprintRepository,
     OAAAAgentBlueprintService,
 )
-from astrynn_devforge.persistence import SQLAlchemyKernelRepository
+from astrynn_devforge.persistence import (
+    SQLAlchemyAgentBlueprintRepository,
+    SQLAlchemyKernelRepository,
+    SQLAlchemyOutputVaultRepository,
+)
 
 from .auth import InMemoryTokenAuthenticator, Principal
 
@@ -26,9 +31,12 @@ class ApplicationContainer:
     kernel_repository: KernelRepository
     kernel_service: KernelService
     authenticator: InMemoryTokenAuthenticator
-    output_vault_repository: InMemoryOutputVaultRepository
+    output_vault_repository: (
+        InMemoryOutputVaultRepository
+        | SQLAlchemyOutputVaultRepository
+    )
     output_vault_service: OutputVaultService
-    blueprint_repository: InMemoryAgentBlueprintRepository
+    blueprint_repository: AgentBlueprintRepository
     oaaa_service: OAAAAgentBlueprintService
     oaaa_control_plane_persistence: str = "in-memory-development"
 
@@ -69,6 +77,69 @@ def _build_repository(
     return SQLAlchemyKernelRepository(resolved_url, create_schema=auto_create)
 
 
+def _build_blueprint_repository(
+    *,
+    database_url: str | None,
+    create_schema: bool | None,
+) -> tuple[AgentBlueprintRepository, str]:
+    resolved_url = database_url or os.getenv(
+        "ASTRYNN_DATABASE_URL",
+        "",
+    ).strip()
+
+    if not resolved_url:
+        return (
+            InMemoryAgentBlueprintRepository(),
+            "in-memory-development",
+        )
+
+    auto_create = (
+        create_schema
+        if create_schema is not None
+        else _environment_flag(
+            "ASTRYNN_AUTO_CREATE_SCHEMA",
+            default=resolved_url.startswith("sqlite"),
+        )
+    )
+
+    repository = SQLAlchemyAgentBlueprintRepository(
+        resolved_url,
+        create_schema=auto_create,
+    )
+    return repository, repository.persistence_name
+
+
+
+def _build_output_vault_repository(
+    *,
+    database_url: str | None,
+    create_schema: bool | None,
+) -> (
+    InMemoryOutputVaultRepository
+    | SQLAlchemyOutputVaultRepository
+):
+    resolved_url = database_url or os.getenv(
+        "ASTRYNN_DATABASE_URL",
+        "",
+    ).strip()
+
+    if not resolved_url:
+        return InMemoryOutputVaultRepository()
+
+    auto_create = (
+        create_schema
+        if create_schema is not None
+        else _environment_flag(
+            "ASTRYNN_AUTO_CREATE_SCHEMA",
+            default=resolved_url.startswith("sqlite"),
+        )
+    )
+
+    return SQLAlchemyOutputVaultRepository(
+        resolved_url,
+        create_schema=auto_create,
+    )
+
 def build_container(
     token_principals: dict[str, Principal] | None = None,
     *,
@@ -86,12 +157,23 @@ def build_container(
         if token_principals is not None
         else InMemoryTokenAuthenticator.from_environment()
     )
-    output_vault_repository = InMemoryOutputVaultRepository()
+    output_vault_repository = (
+        _build_output_vault_repository(
+            database_url=database_url,
+            create_schema=create_schema,
+        )
+    )
     output_vault_service = OutputVaultService(
         kernel_repository,
         output_vault_repository,
     )
-    blueprint_repository = InMemoryAgentBlueprintRepository()
+    (
+        blueprint_repository,
+        oaaa_control_plane_persistence,
+    ) = _build_blueprint_repository(
+        database_url=database_url,
+        create_schema=create_schema,
+    )
     oaaa_service = OAAAAgentBlueprintService(
         kernel_repository,
         blueprint_repository,
@@ -105,4 +187,7 @@ def build_container(
         output_vault_service=output_vault_service,
         blueprint_repository=blueprint_repository,
         oaaa_service=oaaa_service,
+        oaaa_control_plane_persistence=(
+            oaaa_control_plane_persistence
+        ),
     )

@@ -645,4 +645,87 @@ Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVA
 
 La auditoría de referencias `#15`, `#18`, `#19`, `#21`, `#23`, `#25`, `#26`, `#28` y `#30` queda cerrada como `9/9`, sin Pull Requests cerrados sin fusionar ni trabajo perdido detectado.
 
-Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, persistencia operativa OAAA, cobertura completa de ramas, concurrencia, runtime de agentes, integraciones reales, cumplimiento ni certificación.
+Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, cobertura completa de ramas, concurrencia productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación. La persistencia operativa OAAA sobre SQLite queda verificada posteriormente en la Sesión 4-5.
+
+## Persistencia operativa OAAA sobre SQLite · Sesión 4-5
+
+**Estado:** `FUNCIONA VERIFICADO · ENTORNO LOCAL CONTROLADO`
+
+Se ha migrado el control plane operativo de OAAA desde repositorios exclusivamente
+en memoria hacia persistencia SQLAlchemy sobre SQLite, conservando fallback
+`in-memory-development` cuando no existe una URL de base de datos configurada.
+
+### Capacidades verificadas
+
+- `SQLAlchemyAgentBlueprintRepository` conserva blueprints, versiones,
+  aprobaciones humanas y activation receipts.
+- `SQLAlchemyOutputVaultRepository` conserva versiones de artefactos y
+  Proof Receipts.
+- `ApplicationContainer` selecciona persistencia SQLAlchemy para Kernel,
+  OAAA y Output Vault cuando se configura `ASTRYNN_DATABASE_URL`.
+- La aplicación puede reconstruirse usando la misma base SQLite sin perder
+  el blueprint ni su historial.
+- El workflow continúa después del reinicio:
+  `crear DRAFT → reiniciar → recuperar → revisar → enviar a IN_REVIEW`.
+- Se conservan el mismo `blueprint_id`, el fingerprint de seguridad y la
+  relación correcta entre versiones padre e hijas.
+
+### Evidencia local
+
+- Suite completa: `122 passed`.
+- Calidad estática: `ruff check .` → `All checks passed!`.
+- Test de continuidad HTTP:
+  `test_oaaa_http_workflow_continues_after_sqlite_restart`.
+- Tests de repositorio:
+  `test_sqlalchemy_oaaa_repository.py`.
+- Tests de Output Vault:
+  `test_sqlalchemy_output_vault_repository.py`.
+- Tests de selección del contenedor:
+  `test_container_uses_sqlite_for_oaaa_control_plane` y
+  `test_container_uses_sqlite_for_output_vault`.
+
+### Límites expresos
+
+Este resultado **no equivale** a `PILOT READY` ni a `PRODUCTION READY`.
+
+No demuestra todavía:
+
+- PostgreSQL o Supabase productivo;
+- RLS y aislamiento multi-tenant en base de datos;
+- migraciones productivas versionadas;
+- estrategia de backup, restore y disaster recovery;
+- concurrencia productiva;
+- identidad y autenticación productivas;
+- exposición pública o despliegue en VPS;
+- agentes runtime;
+- integraciones con sistemas reales;
+- uso de datos reales de clientes;
+- cumplimiento regulatorio o certificación.
+
+### Custodia de evidencia remota
+
+La evidencia local y remota queda validada para el alcance SQLite descrito.
+
+- Pull Request: `#50`.
+- Commit de evidencia funcional:
+  `ff0333aebc3a10188e33b15f83ecd86a407472eb`.
+- Suite local: `122 passed`.
+- Ruff local: `All checks passed!`.
+- CI: Run ID `30950513728` · `SUCCESS`.
+- Restart Persistence Verification:
+  Run ID `30950513711` · `SUCCESS`.
+- Human Verification:
+  Run ID `30950513679` · `SUCCESS`.
+- README Clean-room Verification:
+  Run ID `30950513687` · `SUCCESS`.
+- Remaining Endpoint Verification:
+  Run ID `30950513675` · `SUCCESS`.
+- Deliberate Negative Verification:
+  Run ID `30950513705` · `SUCCESS`.
+
+La verificación remota confirma que dos procesos Uvicorn distintos pueden usar
+la misma base SQLite y recuperar el estado persistente de Kernel, OAAA y Output
+Vault después del reinicio.
+
+Esta custodia no amplía el alcance a PostgreSQL, Supabase, RLS, concurrencia
+productiva, backups, identidad productiva, `PILOT READY` ni `PRODUCTION READY`.

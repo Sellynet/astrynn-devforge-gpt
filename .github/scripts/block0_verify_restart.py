@@ -165,7 +165,7 @@ def prepare(base_url: str, state_path: Path) -> None:
         checks.append(
             http_result(
                 "P-001",
-                "First process uses SQLite with volatile OAAA",
+                "First process uses SQLite for Kernel and OAAA",
                 200,
                 response,
                 lambda body: [
@@ -176,8 +176,8 @@ def prepare(base_url: str, state_path: Path) -> None:
                     (
                         isinstance(body, dict)
                         and body.get("oaaa_control_plane_persistence")
-                        == "in-memory-development",
-                        "OAAA is declared in-memory-development",
+                        == "sqlalchemy-sqlite",
+                        "OAAA persistence is sqlalchemy-sqlite",
                     ),
                 ],
             )
@@ -354,7 +354,7 @@ def prepare(base_url: str, state_path: Path) -> None:
         response = client.post(
             f"/api/v1/oaaa/blueprints/{blueprint_id}/submit",
             headers=auth(owner_token),
-            json={"reason": "Verify volatile control-plane state"},
+            json={"reason": "Verify persistent control-plane state"},
         )
         submitted_blueprint = safe_json(response)
         checks.append(
@@ -436,7 +436,7 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
         checks.append(
             http_result(
                 "P-011",
-                "Second process reopens SQLite with fresh OAAA memory",
+                "Second process reopens SQLite with persistent OAAA",
                 200,
                 response,
                 lambda item: [
@@ -447,8 +447,8 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
                     (
                         isinstance(item, dict)
                         and item.get("oaaa_control_plane_persistence")
-                        == "in-memory-development",
-                        "OAAA is still declared in-memory-development",
+                        == "sqlalchemy-sqlite",
+                        "OAAA persistence remains sqlalchemy-sqlite",
                     ),
                 ],
             )
@@ -504,19 +504,33 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
         checks.append(
             http_result(
                 "P-018",
-                "OAAA operational blueprint is lost as declared",
-                404,
+                "OAAA operational blueprint survives restart",
+                200,
                 response,
                 lambda item: [
                     (
-                        isinstance(item, dict) and item.get("detail") == "Blueprint not found",
-                        "API reports Blueprint not found",
+                        isinstance(item, dict)
+                        and item.get("blueprint", {}).get("blueprint_id")
+                        == state["blueprint_id"],
+                        "same blueprint id returns",
+                    ),
+                    (
+                        isinstance(item, dict)
+                        and item.get("blueprint", {}).get("status")
+                        == state["blueprint_status"],
+                        "blueprint status matches pre-restart state",
+                    ),
+                    (
+                        isinstance(item, dict)
+                        and item.get("blueprint", {}).get("version")
+                        == state["blueprint_version"],
+                        "blueprint version matches pre-restart state",
                     ),
                     (
                         isinstance(health, dict)
                         and health.get("oaaa_control_plane_persistence")
-                        == "in-memory-development",
-                        "loss is consistent with the declared control plane",
+                        == "sqlalchemy-sqlite",
+                        "recovery matches the declared persistent control plane",
                     ),
                 ],
             )
@@ -714,7 +728,7 @@ def write_reports(results: list[CheckResult], output_dir: Path, state: dict[str,
             "",
             "- Kernel cases, events, approvals, outputs and evidence are durable in SQLite.",
             "- Aegis and Atlas records survive through the SQL-backed Kernel repository.",
-            "- OAAA operational state is volatile, but its Kernel audit artifacts survive.",
+            "- OAAA operational state and its linked Output Vault artifacts survive in SQLite.",
             "- This does not verify PostgreSQL, Supabase, concurrency or production identity.",
         ]
     )

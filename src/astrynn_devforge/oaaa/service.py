@@ -8,7 +8,7 @@ from astrynn_devforge.dataforge import OutputVaultService, VaultDecision
 from astrynn_devforge.kernel import (
     ArtifactStatus,
     EvidenceReference,
-    InMemoryKernelRepository,
+    KernelRepository,
     OutputArtifact,
     Sensitivity,
 )
@@ -24,7 +24,7 @@ from .models import (
     ToolPermission,
     utc_now,
 )
-from .repository import InMemoryAgentBlueprintRepository
+from .repository import AgentBlueprintRepository
 
 
 class BlueprintTransitionError(ValueError):
@@ -44,8 +44,8 @@ class OAAAAgentBlueprintService:
 
     def __init__(
         self,
-        kernel_repository: InMemoryKernelRepository,
-        blueprint_repository: InMemoryAgentBlueprintRepository,
+        kernel_repository: KernelRepository,
+        blueprint_repository: AgentBlueprintRepository,
         output_vault: OutputVaultService,
     ) -> None:
         self.kernel_repository = kernel_repository
