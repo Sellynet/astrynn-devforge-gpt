@@ -2,7 +2,6 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from astrynn_devforge.aegis import ClearanceDecision
-
 from astrynn_devforge.kernel import Sensitivity
 from astrynn_devforge.oaaa import (
     ApprovalPoint,
