@@ -702,9 +702,30 @@ No demuestra todavía:
 - uso de datos reales de clientes;
 - cumplimiento regulatorio o certificación.
 
-### Custodia de evidencia pendiente
+### Custodia de evidencia remota
 
-La evidencia local queda validada. El Run ID de GitHub Actions, el commit SHA,
-los artefactos de CI y cualquier SHA-256 documental se incorporarán después de
-crear el commit, abrir el Pull Request y completar correctamente la ejecución
-remota.
+La evidencia local y remota queda validada para el alcance SQLite descrito.
+
+- Pull Request: `#50`.
+- Commit de evidencia funcional:
+  `ff0333aebc3a10188e33b15f83ecd86a407472eb`.
+- Suite local: `122 passed`.
+- Ruff local: `All checks passed!`.
+- CI: Run ID `30950513728` · `SUCCESS`.
+- Restart Persistence Verification:
+  Run ID `30950513711` · `SUCCESS`.
+- Human Verification:
+  Run ID `30950513679` · `SUCCESS`.
+- README Clean-room Verification:
+  Run ID `30950513687` · `SUCCESS`.
+- Remaining Endpoint Verification:
+  Run ID `30950513675` · `SUCCESS`.
+- Deliberate Negative Verification:
+  Run ID `30950513705` · `SUCCESS`.
+
+La verificación remota confirma que dos procesos Uvicorn distintos pueden usar
+la misma base SQLite y recuperar el estado persistente de Kernel, OAAA y Output
+Vault después del reinicio.
+
+Esta custodia no amplía el alcance a PostgreSQL, Supabase, RLS, concurrencia
+productiva, backups, identidad productiva, `PILOT READY` ni `PRODUCTION READY`.
