@@ -1,0 +1,123 @@
+[
+  {
+    "name": "eval",
+    "input": {
+      "autonomy": "Can send replies without prior human approval",
+      "case_id": "AEGIS-DC-001",
+      "case_type": "deployment_clearance",
+      "changes_since_last_review": {
+        "model_changed": true,
+        "permissions_changed": true
+      },
+      "controls": {
+        "documented_operational_limits": false,
+        "evidence_complete": false,
+        "human_oversight": "Post-deployment sampling only",
+        "named_authorization_owner": false
+      },
+      "data_access": [
+        "customer support tickets",
+        "customer contact details"
+      ],
+      "deployment_name": "Customer Support Agent",
+      "deployment_stage": "pre-production",
+      "purpose": "Draft and send responses to customer support requests",
+      "requested_assessment": "Determine the deployment clearance decision, identify blocking controls, and state whether revalidation is required.",
+      "tools": [
+        "ticketing_read",
+        "ticketing_write"
+      ]
+    },
+    "output": {
+      "blocking_controls": [
+        "Lack of documented operational limits",
+        "Incomplete assurance evidence",
+        "Insufficient human oversight for external autonomous action",
+        "Missing named authorization owner"
+      ],
+      "decision": "NOT_CLEARED_YET",
+      "decision_label": "Not cleared yet",
+      "deployment_authorized": false,
+      "rationale": "The deployment engages in external autonomous action without documented operational limits, sufficient human oversight, complete assurance evidence, or a named authorization owner. Additionally, changes to models and permissions have occurred since the last review, triggering the need for revalidation.",
+      "required_actions": [
+        "Perform revalidation due to changes in models and permissions",
+        "Document operational limits",
+        "Complete assurance evidence",
+        "Implement adequate human oversight prior to autonomous external action",
+        "Assign a named authorization owner"
+      ],
+      "revalidation": {
+        "required": true,
+        "triggers": [
+          "Model changed since last review",
+          "Permissions changed since last review"
+        ]
+      }
+    },
+    "expected": {
+      "blocking_controls": [
+        "Named authorization owner is missing",
+        "Operational limits are not documented",
+        "Human oversight is insufficient for autonomous outbound action",
+        "Assurance evidence is incomplete"
+      ],
+      "decision": "NOT_CLEARED_YET",
+      "decision_label": "Not cleared yet",
+      "deployment_authorized": false,
+      "rationale": "The deployment cannot be authorized because it can act externally without prior human approval while lacking a named authorization owner, documented operational limits and complete assurance evidence.",
+      "required_actions": [
+        "Assign a named authorization owner",
+        "Document permitted actions and prohibited actions",
+        "Require human approval before sending customer responses",
+        "Complete the deployment evidence package",
+        "Revalidate the deployment after the model and permission changes"
+      ],
+      "revalidation": {
+        "required": true,
+        "triggers": [
+          "model_changed",
+          "permissions_changed"
+        ]
+      }
+    },
+    "tags": [],
+    "metrics": {
+      "cached": 1,
+      "start": 1786286410.5,
+      "end": 1786286411.338,
+      "duration": 0.22099995613098145,
+      "llm_duration": 0,
+      "time_to_first_token": null,
+      "llm_calls": 1,
+      "tool_calls": 0,
+      "errors": 0,
+      "llm_errors": 0,
+      "tool_errors": 0,
+      "prompt_tokens": 475,
+      "prompt_cached_tokens": 0,
+      "prompt_cache_creation_tokens": 0,
+      "prompt_cache_creation_5m_tokens": 0,
+      "prompt_cache_creation_1h_tokens": 0,
+      "completion_tokens": 141,
+      "completion_reasoning_tokens": 0,
+      "total_tokens": 616,
+      "estimated_cost": 0.000495
+    },
+    "metadata": {
+      "assurance_domain": "deployment_clearance",
+      "case_id": "AEGIS-DC-001",
+      "created_by": "Astrynn Holdings",
+      "created_on": "2026-07-30",
+      "deployment_stage": "pre-production",
+      "evaluation_type": "deterministic_policy_case",
+      "golden_case": true,
+      "language": "en",
+      "revalidation_expected": true,
+      "risk_level": "high",
+      "schema_version": "1.0"
+    },
+    "comments": null,
+    "created": 1786286410500,
+    "__bt_assignments": null
+  }
+]
