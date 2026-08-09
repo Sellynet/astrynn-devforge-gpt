@@ -729,3 +729,112 @@ Vault después del reinicio.
 
 Esta custodia no amplía el alcance a PostgreSQL, Supabase, RLS, concurrencia
 productiva, backups, identidad productiva, `PILOT READY` ni `PRODUCTION READY`.
+
+
+## Persistencia operativa sobre PostgreSQL · Sesión 6 / P16B
+
+**Estado:** `FUNCIONA VERIFICADO · ENTORNO LOCAL CONTROLADO + CI PRINCIPAL REMOTO`
+
+Se ha validado la persistencia operativa de Kernel, OAAA y Output Vault sobre
+PostgreSQL real mediante la implementación SQLAlchemy existente, sin introducir
+una implementación paralela específica de proveedor.
+
+El backend se identifica como:
+
+`sqlalchemy-postgresql`
+
+### Capacidades verificadas
+
+- Kernel, OAAA y Output Vault utilizan PostgreSQL mediante la misma
+  `ASTRYNN_DATABASE_URL`.
+- El flujo HTTP persiste después de reconstruir completamente la aplicación:
+  `crear → persistir → reconstruir → recuperar → revisar → enviar a IN_REVIEW`.
+- Se recuperan el mismo blueprint, owner y safety fingerprint.
+- Se preservan versiones y `parent_version_id`.
+- Se rechazan versiones OAAA duplicadas.
+- Se rechazan versiones OAAA saltadas.
+- Se rechaza un `parent_version_id` incoherente.
+- Persisten Human Approval Records.
+- Persisten Activation Receipts.
+- Persisten Output Vault artifacts.
+- Persisten Output Vault Proof Receipts.
+- Se rechazan versiones duplicadas de Output Vault.
+- El aislamiento cross-organization continúa rechazando acceso de otra
+  organización.
+- Un rechazo por `owner_id` inválido en Output Vault no deja artefactos,
+  outputs ni evidencia residual.
+
+### Evidencia local
+
+PostgreSQL utilizado:
+
+- `postgres:16-alpine`
+- contenedor efímero local;
+- datos sintéticos;
+- puerto local `127.0.0.1:55432`;
+- sin datos reales de clientes.
+
+Resultados:
+
+- Gate PostgreSQL específico: `3 passed in 4.64s`.
+- Suite completa con PostgreSQL disponible: `125 passed in 3.84s`.
+- `ruff check .` → `All checks passed!`.
+- `git diff --check` → limpio.
+
+Tests PostgreSQL:
+
+- `test_postgresql_oaaa_workflow_survives_restart`
+- `test_postgresql_repository_contracts_survive_restart`
+- `test_postgresql_cross_org_isolation_and_atomic_vault_rejection`
+
+### Commits funcionales
+
+- `72b1863` · `test: verify PostgreSQL persistence in CI`
+- `791439d` · `test: strengthen PostgreSQL persistence contracts`
+
+Pull Request:
+
+- `#53`
+
+### Evidencia remota disponible antes del gate documental final
+
+Sobre commit `791439d64b39d375f67c4b58445cd0413b788127`:
+
+- CI: Run ID `31315379399` · `SUCCESS`.
+- README Clean-room Verification:
+  Run ID `31315379390` · `SUCCESS`.
+- Human Verification:
+  Run ID `31315379384` · `SUCCESS`.
+
+Los workflows Restart Persistence Verification, Remaining Endpoint Verification
+y Deliberate Negative Verification no se dispararon sobre los commits
+exclusivamente de tests/CI porque sus filtros `paths:` no incluyen `tests/**`
+ni `.github/workflows/ci.yml`.
+
+La modificación de este `VERIFICATION.md` debe activar esos gates mediante su
+trigger `pull_request`, tras lo cual se capturará la custodia remota final.
+
+### Límites expresos
+
+Este resultado NO demuestra todavía:
+
+- Supabase administrado;
+- Supabase Auth;
+- RLS productivo;
+- aislamiento multi-tenant garantizado por políticas de base de datos;
+- migraciones productivas versionadas;
+- concurrencia productiva;
+- locking productivo;
+- backup/restore/disaster recovery;
+- alta disponibilidad;
+- identidad productiva;
+- datos reales de clientes;
+- despliegue público;
+- VPS;
+- agentes runtime;
+- integraciones reales;
+- `PILOT READY`;
+- `PRODUCTION READY`;
+- cumplimiento regulatorio o certificación.
+
+La validación PostgreSQL no amplía automáticamente ninguno de esos claims.
