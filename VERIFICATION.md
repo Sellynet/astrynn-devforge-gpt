@@ -796,23 +796,29 @@ Pull Request:
 
 - `#53`
 
-### Evidencia remota disponible antes del gate documental final
+### Custodia de evidencia remota
 
-Sobre commit `791439d64b39d375f67c4b58445cd0413b788127`:
+Sobre commit `bb4b5d2c20aac3a9359bbdcdd65ab76a7ef4f44f`:
 
-- CI: Run ID `31315379399` · `SUCCESS`.
-- README Clean-room Verification:
-  Run ID `31315379390` · `SUCCESS`.
+- CI:
+  Run ID `31320064970` · `SUCCESS`.
+- Restart Persistence Verification:
+  Run ID `31320064953` · `SUCCESS`.
 - Human Verification:
-  Run ID `31315379384` · `SUCCESS`.
+  Run ID `31320064933` · `SUCCESS`.
+- README Clean-room Verification:
+  Run ID `31320064930` · `SUCCESS`.
+- Remaining Endpoint Verification:
+  Run ID `31320064934` · `SUCCESS`.
+- Deliberate Negative Verification:
+  Run ID `31320064935` · `SUCCESS`.
 
-Los workflows Restart Persistence Verification, Remaining Endpoint Verification
-y Deliberate Negative Verification no se dispararon sobre los commits
-exclusivamente de tests/CI porque sus filtros `paths:` no incluyen `tests/**`
-ni `.github/workflows/ci.yml`.
+Los seis gates remotos requeridos finalizaron correctamente sobre el mismo
+commit de evidencia documental y funcional.
 
-La modificación de este `VERIFICATION.md` debe activar esos gates mediante su
-trigger `pull_request`, tras lo cual se capturará la custodia remota final.
+Esta custodia confirma el alcance PostgreSQL descrito en esta sección y no
+amplía los límites expresos a Supabase, RLS productivo, backups, alta
+disponibilidad, runtime, PILOT READY ni PRODUCTION READY.
 
 ### Límites expresos
 
