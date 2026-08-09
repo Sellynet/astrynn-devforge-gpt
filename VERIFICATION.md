@@ -1,14 +1,14 @@
-# VERIFICATION.md v2.2 · Bloque 0 · Verificación del prototipo
+# VERIFICATION.md v2.3 · Bloque 0 · Verificación del prototipo
 
 Fecha de apertura: 2026-07-16
 
-Última actualización: 2026-07-29
+Última actualización: 2026-08-09
 
-Versión documental: `2.2`
+Versión documental: `2.3`
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO + AUDITORÍA PR/COMMIT 9/9 CERRADA`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO + AUDITORÍA PR/COMMIT 9/9 CERRADA + OAAA SQLITE SESSION 4-5 VERIFICADA + BRAINTRUST AEGIS-DC-001 PASS`
 
 ## 1. Regla de evidencia
 
@@ -19,7 +19,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger, la lectura crítica individual de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, persistencia operativa OAAA, los demás huecos prioritarios de cobertura y la revisión humana nominal de la evidencia global.
+Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger, la lectura crítica individual de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, los demás huecos prioritarios de cobertura y la revisión humana nominal de la evidencia global.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -112,7 +112,6 @@ Clasificación del README: `FUNCIONA VERIFICADO · CLEAN-ROOM AUTOMATIZADO`.
 - Informe: `docs/verification/BLOCK0_HUMAN_SWAGGER_2026-07-18.md`
 
 La observación humana nominal en Swagger queda como `FUNCIONA VERIFICADO`.
-
 
 ### R-008 · Invariante de propietario Output Vault y migración a httpx2
 
@@ -256,10 +255,12 @@ El caso recuperado volvió a producir `APTO` con puntuación total `9`.
 
 ### Frontera OAAA
 
-- estado operativo OAAA: volátil en `InMemoryAgentBlueprintRepository`;
+- estado operativo OAAA: volátil en `InMemoryAgentBlueprintRepository` en la verificación histórica de esta sección;
 - rastro de auditoría OAAA: persistente en Kernel;
-- el blueprint operativo devuelve `404 Blueprint not found` tras reiniciar;
-- outputs y evidencias de sus versiones permanecen.
+- el blueprint operativo devolvía `404 Blueprint not found` tras reiniciar en esa verificación histórica;
+- outputs y evidencias de sus versiones permanecían.
+
+La limitación anterior fue cerrada posteriormente para el alcance SQLite en `Persistencia operativa OAAA sobre SQLite · Sesión 4-5` al final de este documento.
 
 ## 7. README y reproducibilidad
 
@@ -277,9 +278,9 @@ Fricciones conocidas:
 
 ### OAAA operativo
 
-Estado: `DUDOSO · CAPACIDAD PRODUCTIVA NO CONSTRUIDA`.
+Estado: `FUNCIONA VERIFICADO · SQLITE LOCAL CONTROLADO`.
 
-El blueprint operativo se pierde al reiniciar. El rastro durable no sustituye la persistencia operativa de blueprints y versiones.
+La persistencia operativa OAAA para el alcance SQLite fue verificada posteriormente en Sesión 4-5. Persisten fuera de alcance PostgreSQL/Supabase productivo, RLS, backups, concurrencia productiva y operación multi-tenant.
 
 ### PostgreSQL/Supabase
 
@@ -311,17 +312,17 @@ La lectura crítica de la suite no sustituye la revisión humana nominal del con
 - Run reinicio `29498525073`: SQLite contaminó pytest y se intentaron leer campos no expuestos. Corregido.
 - Run reinicio `29498940953`: expectativa fija de artefactos incorrecta. Corregido con baseline dinámico.
 - Primer intento humano de aprobación: dos objetos JSON concatenados en Swagger, HTTP 422. Corregido mediante reemplazo completo; repetición HTTP 201.
+- Primer scorer Braintrust de `AEGIS-DC-001`: comparación textual demasiado rígida de blocking controls semánticamente equivalentes. Corregido mediante canonicalización determinista de conceptos y comprobación explícita de `required_actions`; repetición retrospectiva `PASS` con `score: 1`.
 
-Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El último es `FRICCIÓN DE INTERFAZ / ENTRADA HUMANA · CORREGIDA`.
+Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El intento humano es `FRICCIÓN DE INTERFAZ / ENTRADA HUMANA · CORREGIDA`. El scorer Braintrust inicial es `FALLA DEL HARNESS DE EVALUACIÓN · CORREGIDA`.
 
 ## 10. Pendientes para cerrar el Bloque 0 completo
 
-1. Construir persistencia operativa OAAA y verificar su supervivencia.
-2. Repetir persistencia Kernel con PostgreSQL/Supabase.
-3. Continuar convirtiendo los huecos P0 restantes en pruebas de regresión.
-4. Obtener revisión humana nominal de la evidencia global.
+1. Repetir persistencia Kernel/OAAA con PostgreSQL/Supabase.
+2. Continuar convirtiendo los huecos P0 restantes en pruebas de regresión.
+3. Obtener revisión humana nominal de la evidencia global.
 
-La pasada humana Swagger, la lectura crítica de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits dejan de figurar como pendientes.
+La pasada humana Swagger, la lectura crítica de los 114 tests, la auditoría de gaps entre issues/PR/commits, la persistencia operativa OAAA sobre SQLite y el caso Braintrust `AEGIS-DC-001` dejan de figurar como pendientes.
 
 ## 11. Auditoría crítica de la suite · VERIFICATION.md v2.1
 
@@ -348,7 +349,6 @@ Los dos tests de salud se clasifican como sustanciales porque no se limitan a co
 - Resultado: `FUNCIONA VERIFICADO · EJECUCIÓN LOCAL AUXILIAR`
 
 La medición se ejecutó con las dependencias no fijadas que resolvía el proyecto en la fecha de auditoría. Complementa, pero no sustituye, los artefactos de CI ya registrados.
-
 
 ### Ejecución de regresión v2.1
 
@@ -515,7 +515,6 @@ Los dos tests triviales son:
 | T-111 | `tests/test_vigilance.py::test_revision_invalidates_old_action_approval` | `SUSTANCIAL` |
 | T-112 | `tests/test_vigilance.py::test_orange_grant_requires_owner_approver_separation` | `SUSTANCIAL` |
 | T-113 | `tests/test_vigilance.py::test_execution_record_requires_allowed_authorization` | `SUSTANCIAL` |
-
 | T-114 | `tests/test_output_vault.py::test_create_draft_rejects_owner_mismatch_without_residual_records` | `SUSTANCIAL` |
 
 ### Huecos de cobertura detectados
@@ -532,7 +531,7 @@ Un hueco significa que no existe un test específico suficiente o que al menos u
 6. **ARIA · independencia y finalización.** Probar separación owner/finalizer en ORANGE y RED, decidir si executor/finalizer debe ser también una separación obligatoria, familia fuera del plan, segunda resolución, caso del blueprint cambiado y verdict `PASS_WITH_REMEDIATION`.
 7. **Output Vault · autorización de identidad.** `RESUELTO EN VERIFICATION.md v2.1`. `create_draft` comprueba que `owner_id` coincide con el owner del caso Kernel antes de cualquier persistencia. La prueba de regresión verifica el rechazo y la ausencia de versiones, outputs y evidencias residuales.
 8. **Output Vault · decisiones.** Separar las pruebas de evidencia ausente y test reference ausente; añadir rechazo, rationale vacío, decisión fuera de `REVIEW`, revisión de lineage superseded y motivo de supersession vacío.
-9. **Persistencia del control plane.** OAAA, ARIA, Vigilance y Output Vault continúan con repositorios in-memory. No existen pruebas de reinicio, transacción o integridad durable para su estado operativo.
+9. **Persistencia del control plane.** `RESUELTO PARA OAAA + OUTPUT VAULT EN SQLITE LOCAL CONTROLADO`. La Sesión 4-5 verifica persistencia SQLAlchemy y continuidad tras reinicio para Kernel, OAAA y Output Vault. No cierra ARIA/Vigilance durable ni PostgreSQL/Supabase productivo.
 10. **PostgreSQL/Supabase.** No hay prueba real de PostgreSQL, migraciones, RLS, backups, rollback, concurrencia, locking ni recuperación. SQLite no cierra este riesgo.
 
 #### P1 · Endurecimiento del Bloque 0
@@ -580,7 +579,7 @@ No se consideran “cubiertas” ni “fallidas” por la suite actual:
 - runtime productivo de agentes;
 - credenciales, herramientas o ejecuciones externas reales;
 - API ARIA v0.7 y API avanzada Vigilance;
-- persistencia completa del control plane;
+- persistencia completa del control plane más allá del alcance SQLite verificado;
 - PostgreSQL/Supabase productivo, migraciones, RLS y backups;
 - telemetría continua de trayectorias y correlación multiagente;
 - infraestructura o hardware neuromórfico;
@@ -729,3 +728,50 @@ Vault después del reinicio.
 
 Esta custodia no amplía el alcance a PostgreSQL, Supabase, RLS, concurrencia
 productiva, backups, identidad productiva, `PILOT READY` ni `PRODUCTION READY`.
+
+## Braintrust · AEGIS-DC-001 · Evaluación determinista · 09/08/2026
+
+**Estado:** `FUNCIONA VERIFICADO · BRAINTRUST OFFLINE EVALUATION · SYNTHETIC GOLDEN CASE`
+
+Se completó la evaluación de referencia `AEGIS-DC-001` en Braintrust con un caso sintético de deployment clearance.
+
+### Configuración observada
+
+- Workspace: `Astrynn Holdings`.
+- Proyecto: `Aegis Internal Evaluations`.
+- Prompt: `Aegis Deployment Clearance Decision v1`.
+- Slug: `aegis-deployment-clearance-decision-v1-5250`.
+- Prompt version en el flujo final: `64061c25 (latest)` según UI.
+- Modelo: `Gemini 3.5 Flash-Lite`.
+- Dataset: `Aegis Deployment Clearance Cases`.
+- Caso: `AEGIS-DC-001`.
+- Scorer: `Aegis Clearance Deterministic Policy Match v1`.
+- Actividad de actualización del scorer observada: `156649051128859`.
+- Experimento: `Aegis Deployment Clearance Decision v1-dac27128`.
+- Trace verificado: `a6f2051a`.
+
+### Resultado observado
+
+- `decision: NOT_CLEARED_YET`.
+- `deployment_authorized: false`.
+- Cuatro conceptos bloqueantes: owner de autorización ausente, límites operativos no documentados, supervisión humana insuficiente y evidencia de assurance incompleta.
+- Cinco acciones requeridas, incluida revalidación.
+- `revalidation.required: true`.
+- Triggers de revalidación: cambio de modelo y cambio de permisos.
+- Scorer retrospectivo corregido: `result: PASS`, `score: 1`.
+- `revalidation_required_match: true`.
+- `revalidation_triggers_match: true`.
+
+El scorer inicial había fallado por comparar frases de blocking controls de forma excesivamente literal. La corrección canonicaliza determinísticamente conceptos equivalentes y añade verificación de `required_actions`; no usa un segundo LLM como juez.
+
+### Custodia
+
+- Informe: `docs/verification/BRAINTRUST_AEGIS_DC_001_2026-08-09.md`.
+- Export nativo: `docs/verification/evidence/braintrust/AEGIS-DC-001_2026-08-09.json`.
+- SHA-256 del export descargado: `16e423261b6ea609c66a7e5dca97789e6a1d665110b98f8c232be379229daa1b`.
+
+El JSON nativo conserva input, output, expected, métricas y metadata del caso. El PASS retrospectivo fue observado en el trace de Braintrust y queda documentado en el informe; el JSON exportado no contiene por sí mismo ese resultado retrospectivo.
+
+### Límites
+
+Este PASS verifica exclusivamente que el output observado de `AEGIS-DC-001` coincide con la política determinista configurada tras la corrección del scorer. No demuestra corrección del espacio completo de deployment clearance, runtime enforcement productivo, bind receipts independientemente verificables, infraestructura productiva, cumplimiento regulatorio ni certificación.
