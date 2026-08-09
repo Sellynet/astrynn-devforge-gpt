@@ -9,6 +9,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: astrynn
+          POSTGRES_PASSWORD: astrynn_ci_only
+          POSTGRES_DB: astrynn_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U astrynn -d astrynn_test"
+          --health-interval=2s
+          --health-timeout=5s
+          --health-retries=20
+
     steps:
       - uses: actions/checkout@v4
 
@@ -25,4 +41,7 @@ jobs:
         run: ruff check .
 
       - name: Pytest
+        env:
+          ASTRYNN_POSTGRES_TEST_URL: >-
+            postgresql+psycopg://astrynn:astrynn_ci_only@127.0.0.1:5432/astrynn_test
         run: pytest -q
