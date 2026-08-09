@@ -76,6 +76,18 @@ Observed scorer output:
 
 Classification for this case: `FUNCIONA VERIFICADO · BRAINTRUST OFFLINE EVALUATION · SYNTHETIC CASE`.
 
+## Native export custody
+
+The Braintrust experiment was exported natively as JSON and retained in the repository at:
+
+`docs/verification/evidence/braintrust/AEGIS-DC-001_2026-08-09.json`
+
+SHA-256 of the downloaded JSON:
+
+`16e423261b6ea609c66a7e5dca97789e6a1d665110b98f8c232be379229daa1b`
+
+The native export preserves the evaluated input, model output, expected policy result, metrics and case metadata. The retrospective scorer PASS was observed in the Braintrust trace UI and is recorded in this report; the downloaded JSON does not itself contain the retrospective scorer result.
+
 ## Evidence limitations
 
 This result proves only that the observed `AEGIS-DC-001` output matched the configured deterministic policy checks after the scorer correction.
@@ -91,7 +103,3 @@ It does not prove:
 - production identity, RLS, backup/restore, concurrency or disaster recovery;
 - legal, regulatory or cybersecurity certification;
 - suitability for autonomous consequential deployment.
-
-## Evidence custody still required
-
-Braintrust supports exporting experiment results as JSON or CSV. A native experiment export should be retained outside Braintrust as supporting evidence for this record.
