@@ -18,9 +18,18 @@ class HealthResponse(APIModel):
     status: str = "ok"
     service: str = "astrynn-devforge"
     version: str = "0.6.0"
+
+
+class SystemStatusResponse(APIModel):
+    status: str = "operational"
+    service: str = "astrynn-devforge"
+    version: str = "0.6.0"
+    api_mode: str = "private-development"
     persistence: str
     authentication: str = "bearer-rbac-development"
-    oaaa_control_plane_persistence: str = "in-memory-development"
+    oaaa_control_plane_persistence: str
+    external_actions_enabled: bool = False
+    agent_runtime_enabled: bool = False
 
 
 class PrincipalResponse(APIModel):
