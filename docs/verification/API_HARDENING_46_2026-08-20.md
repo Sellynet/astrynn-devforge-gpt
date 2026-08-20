@@ -69,9 +69,31 @@ No CORS middleware is enabled by this change. Tests assert that an Origin-bearin
 
 ## Verification status
 
-Implementation is on branch `feat/api-hardening-46`.
+Branch evaluated: `feat/api-hardening-46`.
 
-CI evidence: **PENDING** until the pull request workflows complete.
+Pull request: `#54` — `feat(api): close hardening #46 with request trace and status endpoint`.
+
+Head commit evaluated: `a80a36003e9100f0a266eda47962f35d1b7586bd`.
+
+All six pull-request workflows completed successfully on 2026-08-20:
+
+- CI — Run ID `32409257031`, run `111` — **SUCCESS**;
+- Block 0 Human Verification — Run ID `32409257024`, run `24` — **SUCCESS**;
+- Block 0 Remaining Endpoint Verification — Run ID `32409257071`, run `24` — **SUCCESS**;
+- Block 0 Deliberate Negative Verification — Run ID `32409257374`, run `23` — **SUCCESS**;
+- Block 0 Restart Persistence Verification — Run ID `32409257032`, run `24` — **SUCCESS**;
+- Block 0 README Clean-room Verification — Run ID `32409257183`, run `20` — **SUCCESS**.
+
+CI principal evidence:
+
+- Python `3.11.16`;
+- Ruff `0.16.0` — `All checks passed!`;
+- PostgreSQL `16-alpine` service — healthy;
+- pytest — `131 passed in 4.02s`.
+
+Classification: **FUNCIONA VERIFICADO · SIX-WORKFLOW PR GATE GREEN**.
+
+The six green workflows validate the implementation and regression surface of this hardening change. They do not constitute independent C4 product review or external pilot authorization.
 
 ## Limits
 
