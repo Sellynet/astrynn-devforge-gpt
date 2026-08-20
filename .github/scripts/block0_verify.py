@@ -189,12 +189,17 @@ def main() -> int:
                         (isinstance(body, dict) and body.get("version") == "0.6.0", "version is 0.6.0"),
                         (
                             isinstance(body, dict)
-                            and body.get("authentication") == "bearer-rbac-development",
-                            "authentication mode is bearer-rbac-development",
+                            and set(body) == {"status", "service", "version"},
+                            "health response is minimal",
+                        ),
+                        (bool(response.headers.get("x-request-id")), "request ID is returned"),
+                        (
+                            response.headers.get("x-content-type-options") == "nosniff",
+                            "nosniff security header is present",
                         ),
                         (
-                            isinstance(body, dict) and bool(body.get("persistence")),
-                            "Kernel persistence is identified",
+                            response.headers.get("access-control-allow-origin") != "*",
+                            "CORS wildcard is not enabled",
                         ),
                     ],
                 )
