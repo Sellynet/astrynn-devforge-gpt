@@ -127,8 +127,8 @@ def create_blueprint(api: TestClient, case_id: str, token: str = "owner-a"):
     )
 
 
-def test_health_declares_temporary_oaaa_control_plane_persistence() -> None:
-    response = client().get("/health")
+def test_status_declares_temporary_oaaa_control_plane_persistence() -> None:
+    response = client().get("/status")
 
     assert response.status_code == 200
     assert response.json()["version"] == "0.6.0"

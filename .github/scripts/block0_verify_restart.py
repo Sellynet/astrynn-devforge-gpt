@@ -161,7 +161,7 @@ def prepare(base_url: str, state_path: Path) -> None:
     checks: list[CheckResult] = []
 
     with httpx.Client(base_url=base_url, timeout=30.0) as client:
-        response = client.get("/health")
+        response = client.get("/status")
         checks.append(
             http_result(
                 "P-001",
@@ -170,7 +170,8 @@ def prepare(base_url: str, state_path: Path) -> None:
                 response,
                 lambda body: [
                     (
-                        isinstance(body, dict) and body.get("persistence") == "sqlalchemy-sqlite",
+                        isinstance(body, dict)
+                        and body.get("persistence") == "sqlalchemy-sqlite",
                         "Kernel persistence is sqlalchemy-sqlite",
                     ),
                     (
@@ -431,8 +432,8 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
     checks = [CheckResult(**item) for item in state["prepare_results"]]
 
     with httpx.Client(base_url=base_url, timeout=30.0) as client:
-        response = client.get("/health")
-        health = safe_json(response)
+        response = client.get("/status")
+        system_status = safe_json(response)
         checks.append(
             http_result(
                 "P-011",
@@ -441,7 +442,8 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
                 response,
                 lambda item: [
                     (
-                        isinstance(item, dict) and item.get("persistence") == "sqlalchemy-sqlite",
+                        isinstance(item, dict)
+                        and item.get("persistence") == "sqlalchemy-sqlite",
                         "Kernel persistence remains sqlalchemy-sqlite",
                     ),
                     (
@@ -490,7 +492,8 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
                 response,
                 lambda item: [
                     (
-                        isinstance(item, list) and any(row.get("id") == case_id for row in item),
+                        isinstance(item, list)
+                        and any(row.get("id") == case_id for row in item),
                         "list contains the recovered case",
                     )
                 ],
@@ -527,8 +530,8 @@ def verify(base_url: str, state_path: Path, output_dir: Path) -> None:
                         "blueprint version matches pre-restart state",
                     ),
                     (
-                        isinstance(health, dict)
-                        and health.get("oaaa_control_plane_persistence")
+                        isinstance(system_status, dict)
+                        and system_status.get("oaaa_control_plane_persistence")
                         == "sqlalchemy-sqlite",
                         "recovery matches the declared persistent control plane",
                     ),

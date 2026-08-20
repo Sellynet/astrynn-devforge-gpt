@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 
@@ -50,12 +50,82 @@ def create_case(api: TestClient, token: str = "owner-a-token", **kwargs):
     )
 
 
-def test_health_is_public_but_reports_authentication_mode() -> None:
+def test_health_is_public_and_minimal() -> None:
     response = client().get("/health")
 
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json() == {
+        "status": "ok",
+        "service": "astrynn-devforge",
+        "version": "0.6.0",
+    }
+
+
+def test_system_status_is_public_but_non_sensitive() -> None:
+    response = client().get("/status")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "operational"
+    assert response.json()["api_mode"] == "private-development"
     assert response.json()["authentication"] == "bearer-rbac-development"
+    assert response.json()["external_actions_enabled"] is False
+    assert response.json()["agent_runtime_enabled"] is False
+    lowered = response.text.lower()
+    for forbidden in ("password", "secret", "database_url", "api_key"):
+        assert forbidden not in lowered
+
+
+def test_request_id_is_generated_for_public_and_error_responses() -> None:
+    api = client()
+    health = api.get("/health")
+    unauthorized = api.get("/api/v1/cases")
+
+    assert health.status_code == 200
+    assert unauthorized.status_code == 401
+    UUID(health.headers["x-request-id"])
+    UUID(unauthorized.headers["x-request-id"])
+
+
+def test_valid_request_id_is_propagated() -> None:
+    request_id = str(uuid4())
+
+    response = client().get("/health", headers={"X-Request-ID": request_id})
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == request_id
+
+
+def test_invalid_request_id_is_replaced() -> None:
+    response = client().get(
+        "/health",
+        headers={"X-Request-ID": "not-a-valid-request-id"},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] != "not-a-valid-request-id"
+    UUID(response.headers["x-request-id"])
+
+
+def test_security_headers_are_applied() -> None:
+    response = client().get("/health")
+
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["permissions-policy"] == (
+        "camera=(), microphone=(), geolocation=()"
+    )
+    assert response.headers["referrer-policy"] == "no-referrer"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+
+
+def test_cors_wildcard_is_not_enabled() -> None:
+    response = client().get(
+        "/health",
+        headers={"Origin": "https://example.invalid"},
+    )
+
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") != "*"
 
 
 def test_protected_endpoint_requires_bearer_token() -> None:

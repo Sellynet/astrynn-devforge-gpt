@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 
 from astrynn_devforge.kernel import (
     ApprovalRequiredError,
@@ -31,7 +31,17 @@ from .schemas import (
     CaseTransitionRequest,
     HealthResponse,
     PrincipalResponse,
+    SystemStatusResponse,
 )
+
+_REQUEST_ID_HEADER = "X-Request-ID"
+_SECURITY_HEADERS = {
+    "Cache-Control": "no-store",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+}
 
 
 def _case_response(case) -> CaseResponse:
@@ -90,6 +100,15 @@ def _assert_owner_transition(principal: Principal, case, target: CaseStatus) -> 
         )
 
 
+def _request_id(candidate: str | None) -> str:
+    if candidate:
+        try:
+            return str(UUID(candidate.strip()))
+        except ValueError:
+            pass
+    return str(uuid4())
+
+
 def create_app(container: ApplicationContainer | None = None) -> FastAPI:
     app = FastAPI(
         title="Orbyn Atlas + Aegis + OAAA Private API",
@@ -102,13 +121,28 @@ def create_app(container: ApplicationContainer | None = None) -> FastAPI:
         ),
     )
     app.state.container = container or build_container()
+
+    @app.middleware("http")
+    async def harden_http(request: Request, call_next):
+        request_id = _request_id(request.headers.get(_REQUEST_ID_HEADER))
+        request.state.request_id = request_id
+        response = await call_next(request)
+        response.headers[_REQUEST_ID_HEADER] = request_id
+        for header, value in _SECURITY_HEADERS.items():
+            response.headers[header] = value
+        return response
+
     app.include_router(aegis_router)
     app.include_router(atlas_router)
     app.include_router(oaaa_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["system"])
     def health() -> HealthResponse:
-        return HealthResponse(
+        return HealthResponse()
+
+    @app.get("/status", response_model=SystemStatusResponse, tags=["system"])
+    def system_status() -> SystemStatusResponse:
+        return SystemStatusResponse(
             persistence=app.state.container.kernel_repository.persistence_name,
             oaaa_control_plane_persistence=(
                 app.state.container.oaaa_control_plane_persistence

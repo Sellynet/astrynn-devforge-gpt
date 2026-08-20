@@ -79,15 +79,15 @@ def test_postgresql_oaaa_workflow_survives_restart() -> None:
             create_app(first_container),
             raise_server_exceptions=True,
         ) as first:
-            health = first.get("/health")
+            system_status = first.get("/status")
 
-            assert health.status_code == 200
+            assert system_status.status_code == 200
             assert (
-                health.json()["persistence"]
+                system_status.json()["persistence"]
                 == "sqlalchemy-postgresql"
             )
             assert (
-                health.json()["oaaa_control_plane_persistence"]
+                system_status.json()["oaaa_control_plane_persistence"]
                 == "sqlalchemy-postgresql"
             )
             assert (
