@@ -56,11 +56,11 @@ def test_api_recovers_case_from_shared_sqlite_database(tmp_path: Path) -> None:
         )
     )
     recovered = second.get(f"/api/v1/cases/{case_id}", headers=headers)
-    health = second.get("/health")
+    system_status = second.get("/status")
 
     assert recovered.status_code == 200
     assert recovered.json()["title"] == "Persistent API case"
-    assert health.json()["persistence"] == "sqlalchemy-sqlite"
+    assert system_status.json()["persistence"] == "sqlalchemy-sqlite"
 
 
 
@@ -77,7 +77,7 @@ def test_container_uses_sqlite_for_oaaa_control_plane(
         create_schema=True,
     )
     api = TestClient(create_app(container))
-    health = api.get("/health")
+    system_status = api.get("/status")
 
     assert isinstance(
         container.blueprint_repository,
@@ -87,9 +87,9 @@ def test_container_uses_sqlite_for_oaaa_control_plane(
         container.oaaa_control_plane_persistence
         == "sqlalchemy-sqlite"
     )
-    assert health.status_code == 200
+    assert system_status.status_code == 200
     assert (
-        health.json()["oaaa_control_plane_persistence"]
+        system_status.json()["oaaa_control_plane_persistence"]
         == "sqlalchemy-sqlite"
     )
 
