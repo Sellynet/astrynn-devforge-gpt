@@ -1,9 +1,9 @@
 name: One-shot Verification 46 Evidence Append
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/api-hardening-46
+      - main
     paths:
       - ".github/workflows/one-shot-verification-46.yml"
 
