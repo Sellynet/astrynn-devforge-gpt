@@ -1,14 +1,14 @@
-# VERIFICATION.md v2.3 · Bloque 0 · Verificación del prototipo
+# VERIFICATION.md v2.4 · Bloque 0 · Verificación del prototipo
 
 Fecha de apertura: 2026-07-16
 
-Última actualización: 2026-08-09
+Última actualización: 2026-08-22
 
-Versión documental: `2.3`
+Versión documental: `2.4`
 
 Repositorio: `Sellynet/astrynn-devforge-gpt`
 
-Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO + AUDITORÍA PR/COMMIT 9/9 CERRADA + OAAA SQLITE SESSION 4-5 VERIFICADA + BRAINTRUST AEGIS-DC-001 PASS`
+Estado global: `BLOQUE 0 PARCIALMENTE COMPLETADO · PASADA HUMANA SWAGGER + README CLEAN-ROOM + 16/16 ENDPOINTS + 22/22 CONTROLES NEGATIVOS + 20/20 PERSISTENCIA REINICIO HISTÓRICA + LECTURA CRÍTICA 114/114 TESTS VERIFICADOS + OUTPUT VAULT OWNER_ID P0 RESUELTO + WARNING STARLETTE/HTTPX RESUELTO + AUDITORÍA PR/COMMIT 9/9 CERRADA + P16A SQLITE VERIFICADO + P16B POSTGRESQL VERIFICADO + BRAINTRUST AEGIS-DC-001 PASS + API HARDENING #46 IMPLEMENTADO/FUSIONADO/VERIFICADO`
 
 ## 1. Regla de evidencia
 
@@ -19,7 +19,7 @@ Estados permitidos:
 - `DUDOSO`: evidencia incompleta, ambigua o capacidad no construida.
 - `PENDIENTE`: prueba todavía no ejecutada.
 
-Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger, la lectura crítica individual de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx quedan resueltos en la rama `fix/output-vault-owner-invariant`. Continúan pendientes PostgreSQL/Supabase, los demás huecos prioritarios de cobertura y la revisión humana nominal de la evidencia global.
+Una CI verde no cierra por sí sola todo el Bloque 0. La pasada humana nominal en Swagger, la lectura crítica individual de los 114 tests y la auditoría de gaps entre issues, Pull Requests y commits están completadas. La invariante P0 de identidad de Output Vault y el warning Starlette/httpx están resueltos. La persistencia operativa de Kernel/OAAA/Output Vault está verificada para SQLite local controlado (P16A) y PostgreSQL controlado (P16B). Continúan fuera de alcance o pendientes Supabase administrado, RLS productivo, backup/restore/DR, alta disponibilidad, identidad productiva, runtime productivo e integraciones reales. La revisión humana nominal de la evidencia global sigue pendiente.
 
 No se utilizaron datos reales, secretos ni credenciales de clientes.
 
@@ -280,13 +280,17 @@ Fricciones conocidas:
 
 Estado: `FUNCIONA VERIFICADO · SQLITE LOCAL CONTROLADO`.
 
-La persistencia operativa OAAA para el alcance SQLite fue verificada posteriormente en Sesión 4-5. Persisten fuera de alcance PostgreSQL/Supabase productivo, RLS, backups, concurrencia productiva y operación multi-tenant.
+La persistencia operativa OAAA para el alcance SQLite fue verificada posteriormente en Sesión 4-5. Persisten fuera de alcance Supabase productivo, RLS, backups, concurrencia productiva y operación multi-tenant.
 
-### PostgreSQL/Supabase
+### PostgreSQL / Supabase
 
-Estado: `PENDIENTE`.
+Estado PostgreSQL: `FUNCIONA VERIFICADO · POSTGRESQL REAL CONTROLADO + CI REMOTO`.
 
-No se han verificado migraciones, RLS, backups, secretos seguros ni persistencia contra PostgreSQL/Supabase.
+La persistencia Kernel/OAAA/Output Vault sobre PostgreSQL fue verificada posteriormente en P16B / PR #53. La sección histórica y la sección P16B al final de este documento conservan la evidencia correspondiente.
+
+Estado Supabase/RLS/readiness productivo: `PENDIENTE / FUERA DE ALCANCE`.
+
+No se han verificado Supabase administrado, RLS productivo, backups, alta disponibilidad, identidad productiva ni operación multi-tenant productiva.
 
 ### Warning de dependencias
 
@@ -318,11 +322,11 @@ Los tres primeros son `FALLA DEL HARNESS · CORREGIDA`. El intento humano es `FR
 
 ## 10. Pendientes para cerrar el Bloque 0 completo
 
-1. Repetir persistencia Kernel/OAAA con PostgreSQL/Supabase.
-2. Continuar convirtiendo los huecos P0 restantes en pruebas de regresión.
-3. Obtener revisión humana nominal de la evidencia global.
+1. Resolver los gaps prioritarios de cobertura que sigan vigentes y convertirlos en pruebas de regresión gobernadas.
+2. Obtener revisión humana nominal de la evidencia global.
+3. Mantener separados de Bloque 0 los gates de Supabase/RLS productivo, backup/restore/DR, identidad productiva, tráfico externo y runtime.
 
-La pasada humana Swagger, la lectura crítica de los 114 tests, la auditoría de gaps entre issues/PR/commits, la persistencia operativa OAAA sobre SQLite y el caso Braintrust `AEGIS-DC-001` dejan de figurar como pendientes.
+La pasada humana Swagger, la lectura crítica de los 114 tests, la auditoría de gaps entre issues/PR/commits, la persistencia operativa OAAA sobre SQLite, la persistencia PostgreSQL controlada y el caso Braintrust `AEGIS-DC-001` dejan de figurar como pendientes técnicos independientes.
 
 ## 11. Auditoría crítica de la suite · VERIFICATION.md v2.1
 
@@ -531,8 +535,8 @@ Un hueco significa que no existe un test específico suficiente o que al menos u
 6. **ARIA · independencia y finalización.** Probar separación owner/finalizer en ORANGE y RED, decidir si executor/finalizer debe ser también una separación obligatoria, familia fuera del plan, segunda resolución, caso del blueprint cambiado y verdict `PASS_WITH_REMEDIATION`.
 7. **Output Vault · autorización de identidad.** `RESUELTO EN VERIFICATION.md v2.1`. `create_draft` comprueba que `owner_id` coincide con el owner del caso Kernel antes de cualquier persistencia. La prueba de regresión verifica el rechazo y la ausencia de versiones, outputs y evidencias residuales.
 8. **Output Vault · decisiones.** Separar las pruebas de evidencia ausente y test reference ausente; añadir rechazo, rationale vacío, decisión fuera de `REVIEW`, revisión de lineage superseded y motivo de supersession vacío.
-9. **Persistencia del control plane.** `RESUELTO PARA OAAA + OUTPUT VAULT EN SQLITE LOCAL CONTROLADO`. La Sesión 4-5 verifica persistencia SQLAlchemy y continuidad tras reinicio para Kernel, OAAA y Output Vault. No cierra ARIA/Vigilance durable ni PostgreSQL/Supabase productivo.
-10. **PostgreSQL/Supabase.** No hay prueba real de PostgreSQL, migraciones, RLS, backups, rollback, concurrencia, locking ni recuperación. SQLite no cierra este riesgo.
+9. **Persistencia del control plane.** `RESUELTO PARA OAAA + OUTPUT VAULT EN SQLITE LOCAL CONTROLADO`. La Sesión 4-5 verifica persistencia SQLAlchemy y continuidad tras reinicio para Kernel, OAAA y Output Vault. No cierra ARIA/Vigilance durable ni readiness productivo.
+10. **PostgreSQL / Supabase.** `RESUELTO PARA POSTGRESQL REAL CONTROLADO EN P16B`. Permanecen fuera de alcance Supabase administrado, RLS productivo, backups, rollback/DR, alta disponibilidad, concurrencia/locking productivos y recuperación operativa.
 
 #### P1 · Endurecimiento del Bloque 0
 
@@ -579,8 +583,8 @@ No se consideran “cubiertas” ni “fallidas” por la suite actual:
 - runtime productivo de agentes;
 - credenciales, herramientas o ejecuciones externas reales;
 - API ARIA v0.7 y API avanzada Vigilance;
-- persistencia completa del control plane más allá del alcance SQLite verificado;
-- PostgreSQL/Supabase productivo, migraciones, RLS y backups;
+- persistencia completa del control plane más allá de los alcances SQLite/PostgreSQL controlados verificados;
+- Supabase productivo, migraciones productivas, RLS, backups/DR y alta disponibilidad;
 - telemetría continua de trayectorias y correlación multiagente;
 - infraestructura o hardware neuromórfico;
 - constitución, contratación, pagos o asignación autónoma de capital por Venture Foundry.
@@ -638,13 +642,13 @@ La auditoría cierra el gap documental. No demuestra por sí sola que todas las 
 
 ## 13. Conclusión
 
-La reproducibilidad documental del README, los 16 endpoints automáticos, los 22 controles negativos y los 20 controles de persistencia quedan como `FUNCIONA VERIFICADO`.
+La reproducibilidad documental del README, los 16 endpoints automáticos, los 22 controles negativos y los 20 controles de persistencia históricos quedan como `FUNCIONA VERIFICADO`.
 
-Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger. La suite queda clasificada como `112/114 SUSTANCIALES` y `2/114 TRIVIALES`; esta proporción favorable no equivale a cobertura completa.
+Los primeros ocho endpoints también quedan como `FUNCIONA VERIFICADO · OBSERVACIÓN HUMANA NOMINAL` en Swagger. La suite histórica queda clasificada como `112/114 SUSTANCIALES` y `2/114 TRIVIALES`; esta proporción favorable no equivale a cobertura completa.
 
 La auditoría de referencias `#15`, `#18`, `#19`, `#21`, `#23`, `#25`, `#26`, `#28` y `#30` queda cerrada como `9/9`, sin Pull Requests cerrados sin fusionar ni trabajo perdido detectado.
 
-Esto no demuestra todavía identidad productiva, PostgreSQL/Supabase, cobertura completa de ramas, concurrencia productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación. La persistencia operativa OAAA sobre SQLite queda verificada posteriormente en la Sesión 4-5.
+La persistencia operativa de Kernel/OAAA/Output Vault está verificada para SQLite local controlado y PostgreSQL real controlado. Esto no demuestra todavía Supabase administrado, RLS productivo, backup/restore/DR, alta disponibilidad, identidad productiva, concurrencia productiva, runtime de agentes, integraciones reales, cumplimiento ni certificación.
 
 ## Persistencia operativa OAAA sobre SQLite · Sesión 4-5
 
@@ -689,7 +693,7 @@ Este resultado **no equivale** a `PILOT READY` ni a `PRODUCTION READY`.
 
 No demuestra todavía:
 
-- PostgreSQL o Supabase productivo;
+- PostgreSQL o Supabase productivo en el alcance de esta verificación SQLite;
 - RLS y aislamiento multi-tenant en base de datos;
 - migraciones productivas versionadas;
 - estrategia de backup, restore y disaster recovery;
@@ -889,3 +893,39 @@ El JSON nativo conserva input, output, expected, métricas y metadata del caso. 
 ### Límites
 
 Este PASS verifica exclusivamente que el output observado de `AEGIS-DC-001` coincide con la política determinista configurada tras la corrección del scorer. No demuestra corrección del espacio completo de deployment clearance, runtime enforcement productivo, bind receipts independientemente verificables, infraestructura productiva, cumplimiento regulatorio ni certificación.
+
+## API hardening · Issue #46 · 20/08/2026
+
+**Estado:** `FUNCIONA VERIFICADO · IMPLEMENTADO + FUSIONADO + EVIDENCIA REMOTA`
+
+El hardening residual de la API definido en el issue `#46` fue implementado y fusionado mediante el PR `#54`.
+
+### Alcance verificado
+
+- `/health` reducido a metadata mínima de disponibilidad;
+- endpoint `/status` separado y acotado, sin secretos ni configuración privada;
+- generación/propagación UUID de `X-Request-ID` y correlación en respuesta;
+- cabeceras básicas de seguridad;
+- cobertura negativa explícita contra CORS wildcard;
+- tests HTTP específicos;
+- consumidores históricos de persistencia migrados de `/health` a `/status` sin debilitar aserciones.
+
+### Custodia
+
+- Pull Request: `#54`.
+- Merge commit en `main`: `48341d09d7ec46be606c7277f30cd6c2dc20dd35`.
+- PR head final: `8c56571f2ca9814ededdffad304aa1f3167c3c3e`.
+- Informe de evidencia: `docs/verification/API_HARDENING_46_2026-08-20.md`.
+- Evidencia local registrada: Ruff limpio, PostgreSQL healthy y `131 passed`.
+- CI: Run ID `32409753367` · `SUCCESS`.
+- Human Verification: Run ID `32409753432` · `SUCCESS`.
+- Remaining Endpoint Verification: Run ID `32409753399` · `SUCCESS`.
+- Deliberate Negative Verification: Run ID `32409753403` · `SUCCESS`.
+- Restart Persistence Verification: Run ID `32409753387` · `SUCCESS`.
+- README Clean-room Verification: Run ID `32409753491` · `SUCCESS`.
+
+Los seis workflows existentes del PR finalizaron correctamente sobre el head final indicado.
+
+### Límites
+
+El cierre de #46 no establece autorización para tráfico externo ni demuestra C4/Pilot Ready, Production Ready, lifecycle de identidad productiva, rotación de secretos, RLS, backup/restore/DR, runtime enforcement ni operación productiva. Atlas permanece C3 hasta completar el re-gate C4 correspondiente.

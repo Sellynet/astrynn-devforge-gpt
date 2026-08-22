@@ -17,13 +17,21 @@ Esta versión contiene una API privada FastAPI con:
 - Kernel de casos, eventos y aprobaciones;
 - autenticación Bearer de desarrollo y RBAC por organización;
 - persistencia Kernel configurable en memoria o mediante SQLAlchemy;
+- persistencia OAAA y Output Vault mediante SQLAlchemy cuando existe `ASTRYNN_DATABASE_URL`;
 - evaluación y registro Aegis Clearance;
 - briefings Orbyn Atlas trazables;
-- blueprints OAAA versionados dentro del proceso activo.
+- blueprints OAAA versionados, con continuidad de control plane verificada sobre SQLite local y PostgreSQL controlado.
 
-Esta versión **no** contiene runtime de agentes, integraciones externas, credenciales productivas, despliegue autónomo ni endpoint de activación.
+Esta versión **no** contiene runtime productivo de agentes, integraciones externas activas, credenciales productivas, despliegue autónomo ni endpoint de activación.
 
-El repositorio operativo de blueprints OAAA continúa siendo `in-memory-development`. Sus artefactos y evidencias quedan registrados en el Kernel, pero el blueprint operativo se pierde al reiniciar la API.
+Cuando `ASTRYNN_DATABASE_URL` está configurada, Kernel, OAAA y Output Vault utilizan persistencia SQLAlchemy. Cuando no existe una URL de base de datos configurada, el entorno de desarrollo conserva el fallback `in-memory-development`; ese fallback no debe confundirse con el estado verificado de las rutas SQLite/PostgreSQL.
+
+Baselines de persistencia verificados:
+
+- P16A / PR #50: SQLite local controlado, continuidad `crear DRAFT → reiniciar → recuperar → revisar → enviar a IN_REVIEW`, `122 passed` y Ruff verde.
+- P16B / PR #53: PostgreSQL real controlado, continuidad tras reconstrucción de aplicación y evidencia remota de CI.
+
+Estos baselines **no** demuestran Supabase productivo, RLS, backup/restore/DR, alta disponibilidad, identidad productiva, tráfico externo, agentes runtime, `PILOT READY` ni `PRODUCTION READY`.
 
 ## Requisitos
 
@@ -259,14 +267,13 @@ Acción correctiva:
 
 ## Persistencia y reinicio
 
-Para desarrollo local, `sqlite:///./astrynn-readme.db` conserva casos, eventos, aprobaciones, outputs y evidencias entre reinicios.
+Para desarrollo local, `sqlite:///./astrynn-readme.db` conserva Kernel, blueprints OAAA, historial/versiones, approvals, outputs, artefactos de Output Vault y Proof Receipts entre reinicios cuando `ASTRYNN_DATABASE_URL` está configurada.
 
-`ASTRYNN_AUTO_CREATE_SCHEMA=true` es aceptable únicamente para SQLite local. Para PostgreSQL o Supabase debe mantenerse en `false` y utilizar migraciones revisadas, RLS, backups y secretos seguros.
+`ASTRYNN_AUTO_CREATE_SCHEMA=true` es aceptable únicamente para SQLite local. Para PostgreSQL controlado se ha verificado persistencia con schema preparado en el gate P16B; un entorno PostgreSQL/Supabase productivo debe mantener creación de schema fuera del arranque automático y utilizar migraciones revisadas, aislamiento/RLS cuando corresponda, backups y secretos seguros.
 
-El repositorio operativo OAAA sigue en memoria. Tras reiniciar:
+Sin `ASTRYNN_DATABASE_URL`, el contenedor conserva el fallback `in-memory-development`; en ese modo los repositorios operativos no tienen la durabilidad de las rutas SQL verificadas.
 
-- el blueprint operativo deja de estar disponible;
-- sus outputs y evidencias de auditoría permanecen en el Kernel SQL.
+La persistencia PostgreSQL verificada no equivale a Supabase administrado ni a readiness productivo.
 
 ## Variables de entorno
 
