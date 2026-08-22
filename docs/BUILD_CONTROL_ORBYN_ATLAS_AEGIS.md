@@ -3,9 +3,13 @@
 ## Status
 
 - **Document owner:** Astrynn Holdings
-- **Build branch:** `orbyn-aegis-foundation`
+- **Operational build branch:** `main`
+- **Historical foundation branch:** `orbyn-aegis-foundation`
 - **Current phase:** Foundation and controlled MVP
-- **Source of truth:** Documento Maestro Integrado v3.1 + Vademécum OAAA
+- **Doctrinal sources:** Documento Maestro Integrado v3.1 + Vademécum OAAA
+- **Verifiable implementation state:** `main` + merged Pull Requests + closed/open issues + reconciled `VERIFICATION.md`
+
+This document defines build doctrine, scope boundaries and Definition of Done. It does **not** override the current implementation state recorded by `main`, GitHub issue/PR history or verified evidence.
 
 ## Mission
 
