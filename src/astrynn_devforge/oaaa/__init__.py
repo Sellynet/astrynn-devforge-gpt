@@ -33,6 +33,7 @@ from .service import (
 )
 
 __all__ = [
+    "HANDOFF_SCHEMA_VERSION",
     "ARIATestFamily",
     "ARIATestRequirement",
     "ActivationReceipt",
@@ -47,7 +48,6 @@ __all__ = [
     "BlueprintTransitionError",
     "DataBoundary",
     "DuplicateBlueprintVersionError",
-    "HANDOFF_SCHEMA_VERSION",
     "HandoffAcknowledgement",
     "HandoffAcknowledgementState",
     "HandoffClearanceEvidence",
