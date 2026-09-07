@@ -14,9 +14,9 @@ from astrynn_devforge.aegis import (
     RiskScores,
     SpecialistReviewTrigger,
 )
+
 from .enums import BlueprintStatus
 from .repository import AgentBlueprintRepository
-
 
 HANDOFF_SCHEMA_VERSION = "OAAA-AEGIS-HANDOFF-0.1"
 ELIGIBLE_SOURCE_STATUS = BlueprintStatus.IN_REVIEW
