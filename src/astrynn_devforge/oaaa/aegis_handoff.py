@@ -14,7 +14,6 @@ from astrynn_devforge.aegis import (
     RiskScores,
     SpecialistReviewTrigger,
 )
-
 from .enums import BlueprintStatus
 from .repository import AgentBlueprintRepository
 
