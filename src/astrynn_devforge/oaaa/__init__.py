@@ -1,3 +1,14 @@
+from .aegis_handoff import (
+    HANDOFF_SCHEMA_VERSION,
+    AegisHandoffContext,
+    HandoffAcknowledgement,
+    HandoffAcknowledgementState,
+    HandoffClearanceEvidence,
+    HandoffRejectedError,
+    OAAAtoAegisClearanceHandoff,
+    OAAAtoAegisHandoffResult,
+    OAAAtoAegisHandoffService,
+)
 from .enums import ARIATestFamily, AutonomyLevel, BlueprintStatus, HumanDecision
 from .governed_service import OAAAAgentBlueprintService
 from .models import (
@@ -22,9 +33,11 @@ from .service import (
 )
 
 __all__ = [
+    "HANDOFF_SCHEMA_VERSION",
     "ARIATestFamily",
     "ARIATestRequirement",
     "ActivationReceipt",
+    "AegisHandoffContext",
     "AgentBlueprintRepository",
     "AgentBlueprintVersion",
     "ApprovalPoint",
@@ -35,10 +48,17 @@ __all__ = [
     "BlueprintTransitionError",
     "DataBoundary",
     "DuplicateBlueprintVersionError",
+    "HandoffAcknowledgement",
+    "HandoffAcknowledgementState",
+    "HandoffClearanceEvidence",
+    "HandoffRejectedError",
     "HumanApprovalRecord",
     "HumanDecision",
     "InMemoryAgentBlueprintRepository",
     "OAAAAgentBlueprintService",
+    "OAAAtoAegisClearanceHandoff",
+    "OAAAtoAegisHandoffResult",
+    "OAAAtoAegisHandoffService",
     "StaleClearanceError",
     "ToolPermission",
 ]
