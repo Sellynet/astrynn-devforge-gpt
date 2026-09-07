@@ -11,6 +11,7 @@ from astrynn_devforge.aegis import (
 from astrynn_devforge.dataforge import InMemoryOutputVaultRepository, OutputVaultService
 from astrynn_devforge.kernel import InMemoryKernelRepository, KernelService, Sensitivity
 from astrynn_devforge.oaaa import (
+    HANDOFF_SCHEMA_VERSION,
     AegisHandoffContext,
     ApprovalPoint,
     ARIATestFamily,
@@ -18,7 +19,6 @@ from astrynn_devforge.oaaa import (
     AutonomyLevel,
     BlueprintStatus,
     DataBoundary,
-    HANDOFF_SCHEMA_VERSION,
     HandoffAcknowledgementState,
     HandoffRejectedError,
     InMemoryAgentBlueprintRepository,
@@ -374,7 +374,7 @@ def test_missing_supplemental_evidence_reference_is_rejected() -> None:
 
 
 def test_non_review_blueprint_is_not_eligible_for_handoff() -> None:
-    oaaa, repo, blueprint, owner_id, _ = build_reviewed_blueprint()
+    _oaaa, repo, blueprint, owner_id, _ = build_reviewed_blueprint()
     service = OAAAtoAegisHandoffService(repo)
     changed = replace(
         blueprint,
