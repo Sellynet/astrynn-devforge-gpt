@@ -49,13 +49,6 @@ def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-def _require_text(value: str, field_name: str) -> str:
-    cleaned = value.strip()
-    if not cleaned:
-        raise ValueError(f"{field_name} is required")
-    return cleaned
-
-
 def _canonical_json(payload: dict[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -81,22 +74,13 @@ class AegisHandoffContext:
     organization_id: UUID
     owner_id: UUID
     sector: str
-    scores: RiskScores
+    scores: RiskScores | None
     systems: tuple[str, ...] = ()
     users: tuple[str, ...] = ()
     providers: tuple[str, ...] = ()
     specialist_triggers: tuple[SpecialistReviewTrigger, ...] = ()
     critical_blockers: tuple[str, ...] = ()
     evidence_refs: tuple[str, ...] = ()
-
-    def __post_init__(self) -> None:
-        _require_text(self.sector, "Aegis sector")
-        if not self.evidence_refs:
-            raise ValueError("At least one Aegis supplemental evidence reference is required")
-        for evidence_ref in self.evidence_refs:
-            _require_text(evidence_ref, "Aegis supplemental evidence reference")
-        for blocker in self.critical_blockers:
-            _require_text(blocker, "Aegis critical blocker")
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,6 +217,26 @@ class OAAAtoAegisHandoffService:
             raise HandoffRejectedError(
                 HandoffAcknowledgementState.REJECTED_INCOMPLETE,
                 "The source blueprint has no Output Vault artifact reference",
+            )
+        if not context.sector.strip():
+            raise HandoffRejectedError(
+                HandoffAcknowledgementState.REJECTED_INCOMPLETE,
+                "Aegis sector is required and cannot be inferred from OAAA",
+            )
+        if context.scores is None:
+            raise HandoffRejectedError(
+                HandoffAcknowledgementState.REJECTED_INCOMPLETE,
+                "Complete Aegis RiskScores are required and cannot be inferred from OAAA",
+            )
+        if not context.evidence_refs or any(not ref.strip() for ref in context.evidence_refs):
+            raise HandoffRejectedError(
+                HandoffAcknowledgementState.REJECTED_INCOMPLETE,
+                "Aegis supplemental context requires at least one evidence reference",
+            )
+        if any(not blocker.strip() for blocker in context.critical_blockers):
+            raise HandoffRejectedError(
+                HandoffAcknowledgementState.REJECTED_INCOMPLETE,
+                "Aegis critical blockers cannot contain blank values",
             )
 
         use_case = AIUseCase(
