@@ -56,7 +56,8 @@ def test_stale_source_rejected():
 def test_tenant_mismatch_rejected():
     obj = fixture()
     obj.handoff.organization_id = uuid4()
-    assert adapt(obj).status == "EVALUATION_ONLY"
+    with pytest.raises(EvaluationBoundaryError):
+        adapt(obj)
 
 def test_target_tamper_rejected():
     obj = fixture()
@@ -73,5 +74,4 @@ def test_ack_is_not_approval():
 def test_material_change_stays_evaluation_only():
     obj = fixture()
     obj.handoff.material_change = True
-    with pytest.raises(EvaluationBoundaryError):
-        adapt(obj)
+    assert adapt(obj).status == "EVALUATION_ONLY"
