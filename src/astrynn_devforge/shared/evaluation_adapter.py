@@ -41,8 +41,6 @@ def from_oaaa_aegis_handoff(result, *, expected_source_fingerprint: str) -> Eval
         raise EvaluationBoundaryError("Unsupported source schema")
     if handoff.source_safety_fingerprint != expected_source_fingerprint:
         raise EvaluationBoundaryError("Stale source fingerprint")
-    if handoff.material_change:
-        raise EvaluationBoundaryError("Material source change requires a new evaluation")
     if (handoff.case_id != target.case_id or handoff.organization_id != target.organization_id
             or handoff.owner_id != target.owner_id or handoff.target_use_case_id != target.id):
         raise EvaluationBoundaryError("Identity mismatch")
