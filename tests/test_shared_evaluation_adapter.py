@@ -1,9 +1,12 @@
 """BEL-AI-P0-001 synthetic boundary checks; existing OAAA handoff tests remain regression owner."""
 from types import SimpleNamespace
 from uuid import uuid4
+
 import pytest
+
 from astrynn_devforge.shared.evaluation_adapter import (
-    EvaluationBoundaryError, from_oaaa_aegis_handoff,
+    EvaluationBoundaryError,
+    from_oaaa_aegis_handoff,
 )
 
 class Target:
