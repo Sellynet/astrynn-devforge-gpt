@@ -2,12 +2,12 @@
 
 Uses the existing G-01 verified scenario builders, not synthetic stand-in handoffs.
 """
-from dataclasses import replace
-from uuid import uuid4
 import pytest
+
 from astrynn_devforge.oaaa import BlueprintStatus
 from astrynn_devforge.shared.evaluation_adapter import (
-    EvaluationBoundaryError, from_oaaa_aegis_handoff,
+    EvaluationBoundaryError,
+    from_oaaa_aegis_handoff,
 )
 from test_oaaa_aegis_handoff import build_reviewed_blueprint, build_result
 
