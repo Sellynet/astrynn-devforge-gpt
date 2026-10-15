@@ -3,13 +3,14 @@
 Uses the existing G-01 verified scenario builders, not synthetic stand-in handoffs.
 """
 import pytest
+from test_oaaa_aegis_handoff import build_result, build_reviewed_blueprint
 
 from astrynn_devforge.oaaa import BlueprintStatus
 from astrynn_devforge.shared.evaluation_adapter import (
     EvaluationBoundaryError,
     from_oaaa_aegis_handoff,
 )
-from test_oaaa_aegis_handoff import build_reviewed_blueprint, build_result
+
 
 def test_real_oaaa_aegis_handoff_creates_evaluation_only_envelope():
     _service, repo, blueprint, _owner, _organization = build_reviewed_blueprint()
