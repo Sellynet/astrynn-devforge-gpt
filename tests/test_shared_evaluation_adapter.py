@@ -9,6 +9,7 @@ from astrynn_devforge.shared.evaluation_adapter import (
     from_oaaa_aegis_handoff,
 )
 
+
 class Target:
     def __init__(self, ids):
         self.id = uuid4()
