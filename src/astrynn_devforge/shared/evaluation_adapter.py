@@ -2,9 +2,9 @@
 
 Provides an evidence envelope, not an executor, IAM service or activation grant.
 """
+import json
 from dataclasses import dataclass
 from hashlib import sha256
-import json
 
 class EvaluationBoundaryError(ValueError):
     pass
