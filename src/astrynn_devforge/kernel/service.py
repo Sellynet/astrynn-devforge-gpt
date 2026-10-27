@@ -157,3 +157,17 @@ class KernelService:
             raise ApprovalRequiredError(
                 f"Latest approval decision {latest.decision.value} blocks {target.value}"
             )
+
+        # Fail closed at the governance activation boundary.  Approval with
+        # conditions is not evidence that those conditions were fulfilled.
+        # No authenticated condition-verification contract is wired to this
+        # historical Kernel, so it must not infer one from arbitrary case
+        # events, evidence labels, or caller-supplied claims.
+        if (
+            target is CaseStatus.ACTIVE
+            and latest.decision is ApprovalDecision.APPROVE_WITH_CONDITIONS
+        ):
+            raise ApprovalRequiredError(
+                "Conditional approval does not permit ACTIVE without "
+                "authoritative verification of its conditions"
+            )
