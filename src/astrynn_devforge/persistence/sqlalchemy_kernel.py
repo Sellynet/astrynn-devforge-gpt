@@ -13,6 +13,7 @@ from sqlalchemy import (
     Text,
     create_engine,
     select,
+    update,
 )
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
@@ -30,6 +31,7 @@ from astrynn_devforge.kernel import (
     OutputArtifact,
     Sensitivity,
 )
+from astrynn_devforge.kernel.repository import approval_event_matches
 
 
 class Base(DeclarativeBase):
@@ -120,6 +122,10 @@ def _build_engine(database_url: str) -> Engine:
     return create_engine(database_url, **kwargs)
 
 
+class StaleCaseWriteError(RuntimeError):
+    """An out-of-date or unauthorized case snapshot cannot overwrite persisted truth."""
+
+
 class SQLAlchemyKernelRepository:
     """SQL-backed Kernel repository with append-only audit collections."""
 
@@ -153,44 +159,73 @@ class SQLAlchemyKernelRepository:
 
     def save_case(self, case: Case) -> Case:
         with self._sessions.begin() as session:
-            row = session.get(CaseRow, str(case.id))
-            if row is None:
-                row = CaseRow(
-                    id=str(case.id),
-                    title=case.title,
-                    description=case.description,
-                    owner_id=str(case.owner_id),
-                    organization_id=str(case.organization_id),
-                    sensitivity=case.sensitivity.value,
-                    status=case.status.value,
-                    version=case.version,
-                    created_at=case.created_at,
-                    updated_at=case.updated_at,
-                )
-                session.add(row)
-            else:
-                row.title = case.title
-                row.description = case.description
-                row.owner_id = str(case.owner_id)
-                row.organization_id = str(case.organization_id)
-                row.sensitivity = case.sensitivity.value
-                row.status = case.status.value
-                row.version = case.version
-                row.updated_at = case.updated_at
-
-            for event in case.events:
-                if session.get(CaseEventRow, str(event.id)) is None:
-                    session.add(
-                        CaseEventRow(
-                            id=str(event.id),
-                            case_id=str(case.id),
-                            event_type=event.event_type,
-                            actor_id=str(event.actor_id),
-                            details=event.details,
-                            created_at=event.created_at,
-                        )
-                    )
+            self._save_case_in_session(session, case)
         return self.get_case(case.id)
+
+    def _save_case_in_session(self, session: Session, case: Case) -> None:
+        row = session.get(CaseRow, str(case.id))
+        supplied = {str(event.id): event for event in case.events}
+        if len(supplied) != len(case.events):
+            raise StaleCaseWriteError("Duplicate event IDs in case snapshot")
+        if row is None:
+            if case.version != 1 + len(case.events):
+                raise StaleCaseWriteError("New case version disagrees with event history")
+            session.add(CaseRow(
+                id=str(case.id), title=case.title, description=case.description,
+                owner_id=str(case.owner_id), organization_id=str(case.organization_id),
+                sensitivity=case.sensitivity.value, status=case.status.value,
+                version=case.version, created_at=case.created_at,
+                updated_at=case.updated_at,
+            ))
+            new_ids = set(supplied)
+        else:
+            # All formerly persisted events must remain represented; otherwise
+            # a partial/stale caller could silently truncate the history.
+            persisted_ids = set(session.scalars(
+                select(CaseEventRow.id).where(CaseEventRow.case_id == str(case.id))
+            ).all())
+            if not persisted_ids.issubset(supplied):
+                raise StaleCaseWriteError("Case snapshot omits persisted events")
+            new_ids = set(supplied) - persisted_ids
+            expected_version = case.version - len(new_ids)
+            if expected_version != row.version:
+                raise StaleCaseWriteError(
+                    f"Stale case version: expected {expected_version}, persisted {row.version}"
+                )
+            if not new_ids:
+                # Equal-version saves are only safe as exact, no-op retries;
+                # no event => no right to alter any governance field.
+                if any((
+                    case.title != row.title,
+                    case.description != row.description,
+                    str(case.owner_id) != row.owner_id,
+                    str(case.organization_id) != row.organization_id,
+                    case.sensitivity.value != row.sensitivity,
+                    case.status.value != row.status,
+                )):
+                    raise StaleCaseWriteError("No-event save cannot alter case state")
+            else:
+                # Update only when the database STILL has the expected
+                # version.  On a raced write the second writer gets 0 rows,
+                # so it cannot publish stale state or phantom audit events.
+                updated = session.execute(update(CaseRow).where(
+                    CaseRow.id == str(case.id),
+                    CaseRow.version == expected_version,
+                ).values(
+                    title=case.title, description=case.description,
+                    owner_id=str(case.owner_id), organization_id=str(case.organization_id),
+                    sensitivity=case.sensitivity.value, status=case.status.value,
+                    version=case.version, updated_at=case.updated_at,
+                ))
+                if updated.rowcount != 1:
+                    raise StaleCaseWriteError("Concurrent case version changed")
+        for event in case.events:
+            if str(event.id) in new_ids:
+                session.add(CaseEventRow(
+                    id=str(event.id), case_id=str(case.id),
+                    event_type=event.event_type, actor_id=str(event.actor_id),
+                    details=event.details, created_at=event.created_at,
+                ))
 
     def get_case(self, case_id: UUID) -> Case:
         with self._sessions() as session:
@@ -226,6 +261,32 @@ class SQLAlchemyKernelRepository:
                         created_at=approval.created_at,
                     )
                 )
+        return approval
+
+    def commit_approval_and_case(self, approval: ApprovalRecord, case: Case) -> ApprovalRecord:
+        """Commit the approval, linked event and CAS update in one SQL transaction."""
+        if not approval_event_matches(case, approval):
+            raise ValueError("Approval requires one matching case event")
+        linked_event = next(
+            event for event in case.events
+            if event.event_type == "APPROVAL_RECORDED"
+            and event.details.get("approval_id") == str(approval.id)
+        )
+        with self._sessions.begin() as session:
+            if session.get(CaseRow, str(case.id)) is None:
+                raise CaseNotFoundError(str(case.id))
+            if session.get(ApprovalRow, str(approval.id)) is not None:
+                raise ValueError("Approval already exists")
+            if session.get(CaseEventRow, str(linked_event.id)) is not None:
+                raise ValueError("Approval event already exists")
+            self._save_case_in_session(session, case)
+            session.add(ApprovalRow(
+                id=str(approval.id), case_id=str(approval.case_id),
+                approver_id=str(approval.approver_id), decision=approval.decision.value,
+                rationale=approval.rationale, conditions=list(approval.conditions),
+                created_at=approval.created_at,
+            ))
+            session.flush()
         return approval
 
     def approvals_for_case(self, case_id: UUID) -> tuple[ApprovalRecord, ...]:

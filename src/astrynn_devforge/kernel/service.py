@@ -5,7 +5,7 @@ from uuid import UUID
 
 from .enums import ApprovalDecision, CaseStatus, Sensitivity
 from .models import ApprovalRecord, Case, CaseEvent
-from .repository import KernelRepository
+from .repository import KernelRepository, approval_event_matches
 
 
 class InvalidTransitionError(ValueError):
@@ -125,8 +125,6 @@ class KernelService:
             rationale=rationale.strip(),
             conditions=conditions,
         )
-        self.repository.append_approval(approval)
-
         case.record_event(
             CaseEvent(
                 event_type="APPROVAL_RECORDED",
@@ -138,7 +136,7 @@ class KernelService:
                 },
             )
         )
-        self.repository.save_case(case)
+        self.repository.commit_approval_and_case(approval, case)
         return approval
 
     def _assert_approval_allows(self, case_id: UUID, target: CaseStatus) -> None:
@@ -149,6 +147,8 @@ class KernelService:
             )
 
         latest = approvals[-1]
+        if not approval_event_matches(self.repository.get_case(case_id), latest):
+            raise ApprovalRequiredError("Latest approval lacks a matching case event")
         allowed = {
             ApprovalDecision.APPROVE,
             ApprovalDecision.APPROVE_WITH_CONDITIONS,
@@ -156,4 +156,18 @@ class KernelService:
         if latest.decision not in allowed:
             raise ApprovalRequiredError(
                 f"Latest approval decision {latest.decision.value} blocks {target.value}"
+            )
+
+        # Fail closed at the governance activation boundary.  Approval with
+        # conditions is not evidence that those conditions were fulfilled.
+        # No authenticated condition-verification contract is wired to this
+        # historical Kernel, so it must not infer one from arbitrary case
+        # events, evidence labels, or caller-supplied claims.
+        if (
+            target is CaseStatus.ACTIVE
+            and latest.decision is ApprovalDecision.APPROVE_WITH_CONDITIONS
+        ):
+            raise ApprovalRequiredError(
+                "Conditional approval does not permit ACTIVE without "
+                "authoritative verification of its conditions"
             )
