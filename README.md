@@ -301,6 +301,7 @@ pytest -q
 - [`VERIFICATION.md`](VERIFICATION.md)
 - [`docs/BUILD_CONTROL_ORBYN_ATLAS_AEGIS.md`](docs/BUILD_CONTROL_ORBYN_ATLAS_AEGIS.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/PRODUCT_POSITIONING_QEVYNOR_KARVYNX.md`](docs/PRODUCT_POSITIONING_QEVYNOR_KARVYNX.md) — sectores y casos de uso orientativos de QEVYNOR y KARVYNX (hipótesis, no validación comercial).
 - [`docs/MVP_SCOPE.md`](docs/MVP_SCOPE.md)
 - [`docs/SECURITY_AND_APPROVAL_GATES.md`](docs/SECURITY_AND_APPROVAL_GATES.md)
 - [`docs/adr/0001-implementation-architecture.md`](docs/adr/0001-implementation-architecture.md)
