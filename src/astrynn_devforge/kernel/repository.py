@@ -12,6 +12,22 @@ class CaseNotFoundError(KeyError):
     pass
 
 
+def approval_event_matches(case: Case, approval: ApprovalRecord) -> bool:
+    """Check lineage consistency; this is not authentication of the approver."""
+    if case.id != approval.case_id:
+        return False
+    events = [
+        event for event in case.events
+        if event.event_type == "APPROVAL_RECORDED"
+        and event.details.get("approval_id") == str(approval.id)
+    ]
+    return len(events) == 1 and (
+        events[0].actor_id == approval.approver_id
+        and events[0].details.get("decision") == approval.decision.value
+        and events[0].details.get("conditions") == list(approval.conditions)
+    )
+
+
 @runtime_checkable
 class KernelRepository(Protocol):
     """Persistence contract shared by in-memory and SQL-backed adapters."""
@@ -26,6 +42,8 @@ class KernelRepository(Protocol):
     def list_cases(self) -> list[Case]: ...
 
     def append_approval(self, approval: ApprovalRecord) -> ApprovalRecord: ...
+
+    def commit_approval_and_case(self, approval: ApprovalRecord, case: Case) -> ApprovalRecord: ...
 
     def approvals_for_case(self, case_id: UUID) -> tuple[ApprovalRecord, ...]: ...
 
@@ -67,6 +85,18 @@ class InMemoryKernelRepository:
     def append_approval(self, approval: ApprovalRecord) -> ApprovalRecord:
         self._approvals.append(approval)
         return approval
+
+    def commit_approval_and_case(self, approval: ApprovalRecord, case: Case) -> ApprovalRecord:
+        if case.id not in self._cases:
+            raise CaseNotFoundError(str(case.id))
+        if not approval_event_matches(case, approval):
+            raise ValueError("Approval requires one matching case event")
+        if any(existing.id == approval.id for existing in self._approvals):
+            raise ValueError("Approval already exists")
+        # Development-only in-memory store, not durable cross-process atomicity.
+        self._cases[case.id] = deepcopy(case)
+        self._approvals.append(deepcopy(approval))
+        return deepcopy(approval)
 
     def approvals_for_case(self, case_id: UUID) -> tuple[ApprovalRecord, ...]:
         return tuple(record for record in self._approvals if record.case_id == case_id)
