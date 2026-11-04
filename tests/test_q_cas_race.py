@@ -7,7 +7,10 @@ import pytest
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from astrynn_devforge.kernel import CaseEvent, KernelService, Sensitivity
-from astrynn_devforge.persistence.sqlalchemy_kernel import SQLAlchemyKernelRepository, StaleCaseWriteError
+from astrynn_devforge.persistence.sqlalchemy_kernel import (
+    SQLAlchemyKernelRepository,
+    StaleCaseWriteError,
+)
 
 
 @pytest.mark.parametrize("attempt", range(10))

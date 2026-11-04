@@ -8,8 +8,14 @@ from uuid import uuid4
 import pytest
 
 from astrynn_devforge.kernel import (
-    ApprovalDecision, ApprovalRequiredError, CaseEvent, CaseStatus,
-    EvidenceReference, InMemoryKernelRepository, KernelService, Sensitivity,
+    ApprovalDecision,
+    ApprovalRequiredError,
+    CaseEvent,
+    CaseStatus,
+    EvidenceReference,
+    InMemoryKernelRepository,
+    KernelService,
+    Sensitivity,
 )
 
 CONDITION = "Evidence of control completion required before governance activation"
@@ -55,25 +61,25 @@ def assert_held_cleanly(svc, repo, case_id, owner):
 
 
 def test_01_conditional_can_enter_approved_for_review_without_promotion():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     assert approved(svc, case, owner).status is CaseStatus.APPROVED
     assert repo.approvals_for_case(case)[-1].conditions == (CONDITION,)
 
 
 def test_02_condition_without_verified_receipt_blocks_active():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     approved(svc, case, owner)
     assert_held_cleanly(svc, repo, case, owner)
 
 
 def test_03_unconditional_approval_still_activates():
-    svc, repo, case, owner, issuer = fixture(decision=ApprovalDecision.APPROVE)
+    svc, _repo, case, owner, _issuer = fixture(decision=ApprovalDecision.APPROVE)
     approved(svc, case, owner)
     assert activate(svc, case, owner).status is CaseStatus.ACTIVE
 
 
 def test_04_spoofed_evidence_ref_does_not_unlock_condition():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     approved(svc, case, owner)
     repo.append_evidence(EvidenceReference(
         case_id=case, label="all checks passed", uri="test://not-authenticated",
@@ -83,7 +89,7 @@ def test_04_spoofed_evidence_ref_does_not_unlock_condition():
 
 
 def test_05_spoofed_event_does_not_unlock_condition():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     approved(svc, case, owner)
     snapshot = repo.get_case(case)
     snapshot.record_event(CaseEvent(
@@ -95,13 +101,13 @@ def test_05_spoofed_event_does_not_unlock_condition():
 
 
 def test_06_conditional_other_sensitivity_also_held():
-    svc, repo, case, owner, issuer = fixture(sensitivity=Sensitivity.GREEN)
+    svc, repo, case, owner, _issuer = fixture(sensitivity=Sensitivity.GREEN)
     approved(svc, case, owner)
     assert_held_cleanly(svc, repo, case, owner)
 
 
 def test_07_latest_reject_prevents_approved():
-    svc, repo, case, owner, issuer = fixture(decision=ApprovalDecision.REJECT)
+    svc, _repo, case, owner, _issuer = fixture(decision=ApprovalDecision.REJECT)
     with pytest.raises(ApprovalRequiredError, match="blocks APPROVED"):
         approved(svc, case, owner)
 
@@ -120,7 +126,7 @@ def test_08_latest_unconditioned_requires_actual_approval_record():
 
 
 def test_09_conditional_failed_active_has_no_new_status_event():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     approved(svc, case, owner)
     before = len(repo.get_case(case).events)
     with pytest.raises(ApprovalRequiredError):
@@ -129,7 +135,7 @@ def test_09_conditional_failed_active_has_no_new_status_event():
 
 
 def test_10_separation_of_duties_still_works():
-    svc, repo, case, owner, issuer = fixture()
+    svc, _repo, case, owner, _issuer = fixture()
     with pytest.raises(ApprovalRequiredError, match="separation"):
         svc.record_approval(case_id=case, approver_id=owner,
                             decision=ApprovalDecision.APPROVE,
@@ -137,7 +143,7 @@ def test_10_separation_of_duties_still_works():
 
 
 def test_11_explicit_condition_remains_in_original_approval_record():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     approved(svc, case, owner)
     before = repo.approvals_for_case(case)[-1]
     assert_held_cleanly(svc, repo, case, owner)
@@ -145,7 +151,7 @@ def test_11_explicit_condition_remains_in_original_approval_record():
 
 
 def test_12_no_new_execution_or_grant_api_introduced():
-    svc, repo, case, owner, issuer = fixture()
+    svc, repo, case, owner, _issuer = fixture()
     assert not hasattr(svc, "issue_token")
     assert not hasattr(svc, "execute_action")
     assert not hasattr(svc, "certify_execution")
@@ -167,7 +173,7 @@ def test_unmet_c02_real_issuer_revocation_fails_closed():
 
 @pytest.mark.xfail(strict=True, reason="NO trusted late evidence semantics in existing Kernel")
 def test_unmet_c09_late_material_contradiction_fails_closed():
-    svc, repo, case, owner, issuer = fixture(decision=ApprovalDecision.APPROVE)
+    svc, repo, case, owner, _issuer = fixture(decision=ApprovalDecision.APPROVE)
     approved(svc, case, owner)
     repo.append_evidence(EvidenceReference(case_id=case, label="LATE_CONTRADICTION_TEST_ONLY",
                                            uri="test://untrusted/1", sensitivity=Sensitivity.ORANGE))

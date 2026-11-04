@@ -1,8 +1,14 @@
 """Closure regression for source-aligned SQLAlchemy Kernel optimistic locking."""
 from uuid import uuid4
+
 import pytest
-from astrynn_devforge.kernel import KernelService, CaseEvent, CaseStatus, Sensitivity
-from astrynn_devforge.persistence.sqlalchemy_kernel import SQLAlchemyKernelRepository, StaleCaseWriteError
+
+from astrynn_devforge.kernel import CaseEvent, CaseStatus, KernelService, Sensitivity
+from astrynn_devforge.persistence.sqlalchemy_kernel import (
+    SQLAlchemyKernelRepository,
+    StaleCaseWriteError,
+)
+
 
 @pytest.fixture
 def setup(tmp_path):
@@ -16,7 +22,7 @@ def setup(tmp_path):
     repo.close()
 
 def test_second_writer_cannot_replace_first_commit(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,owner,_url=setup
     a,b=repo.get_case(cid),repo.get_case(cid)
     a.record_event(CaseEvent(event_type='FIRST_VERIFIED',actor_id=owner,details={'source':'fixture'}))
     repo.save_case(a)
@@ -28,7 +34,7 @@ def test_second_writer_cannot_replace_first_commit(setup):
     assert [e.event_type for e in repo.get_case(cid).events]==['CASE_CREATED','FIRST_VERIFIED']
 
 def test_stale_save_does_not_commit_orphan_event(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,owner,_url=setup
     a,b=repo.get_case(cid),repo.get_case(cid)
     a.record_event(CaseEvent(event_type='FIRST',actor_id=owner,details={}))
     repo.save_case(a)
@@ -38,7 +44,7 @@ def test_stale_save_does_not_commit_orphan_event(setup):
     assert all(e.event_type!='REJECTED_STALE' for e in repo.get_case(cid).events)
 
 def test_reopen_retains_committed_case_and_event(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,owner,url=setup
     case=repo.get_case(cid)
     case.record_event(CaseEvent(event_type='COMMITTED',actor_id=owner,details={}))
     repo.save_case(case)
@@ -51,7 +57,7 @@ def test_reopen_retains_committed_case_and_event(setup):
         fresh.close()
 
 def test_no_event_state_change_is_rejected(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,_owner,_url=setup
     case=repo.get_case(cid)
     case.status=CaseStatus.ACTIVE
     with pytest.raises(StaleCaseWriteError):
@@ -59,7 +65,7 @@ def test_no_event_state_change_is_rejected(setup):
     assert repo.get_case(cid).status==CaseStatus.DRAFT
 
 def test_idempotent_equal_version_retry_allowed(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,_owner,_url=setup
     before=repo.get_case(cid)
     repo.save_case(before)
     after=repo.get_case(cid)
@@ -67,14 +73,14 @@ def test_idempotent_equal_version_retry_allowed(setup):
     assert len(after.events)==len(before.events)
 
 def test_missing_persisted_history_is_rejected(setup):
-    repo,svc,cid,owner,url=setup
+    repo,_svc,cid,_owner,_url=setup
     case=repo.get_case(cid)
     case.events=[]
     with pytest.raises(StaleCaseWriteError):
         repo.save_case(case)
 
 def test_legitimate_service_transitions_still_work(setup):
-    repo,svc,cid,owner,url=setup
+    _repo,svc,cid,owner,_url=setup
     x=svc.transition_case(case_id=cid,target=CaseStatus.IN_REVIEW,
                           actor_id=owner,reason='Reviewed')
     assert x.status is CaseStatus.IN_REVIEW

@@ -8,10 +8,19 @@ from sqlalchemy import event
 from sqlalchemy.exc import OperationalError
 
 from astrynn_devforge.kernel import (
-    ApprovalDecision, ApprovalRecord, ApprovalRequiredError, CaseEvent, CaseStatus,
-    InMemoryKernelRepository, KernelService, Sensitivity,
+    ApprovalDecision,
+    ApprovalRecord,
+    ApprovalRequiredError,
+    CaseEvent,
+    CaseStatus,
+    InMemoryKernelRepository,
+    KernelService,
+    Sensitivity,
 )
-from astrynn_devforge.persistence.sqlalchemy_kernel import SQLAlchemyKernelRepository, StaleCaseWriteError
+from astrynn_devforge.persistence.sqlalchemy_kernel import (
+    SQLAlchemyKernelRepository,
+    StaleCaseWriteError,
+)
 
 
 @pytest.fixture

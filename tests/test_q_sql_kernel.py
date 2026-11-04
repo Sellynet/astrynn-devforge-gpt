@@ -19,7 +19,10 @@ from astrynn_devforge.kernel import (
     KernelService,
     Sensitivity,
 )
-from astrynn_devforge.persistence.sqlalchemy_kernel import SQLAlchemyKernelRepository, StaleCaseWriteError
+from astrynn_devforge.persistence.sqlalchemy_kernel import (
+    SQLAlchemyKernelRepository,
+    StaleCaseWriteError,
+)
 
 
 def setup_case(tmp_path, *, sensitivity=Sensitivity.ORANGE):
@@ -138,7 +141,7 @@ def test_sql_orange_self_approval_still_prohibited(tmp_path):
 
 
 def test_sql_idempotent_save_case_no_duplicate_events(tmp_path):
-    _,repo,svc,cid,owner,reviewer=setup_case(tmp_path)
+    _,repo,svc,cid,_owner,reviewer=setup_case(tmp_path)
     condition(svc,cid,reviewer)
     before=repo.get_case(cid)
     repo.save_case(before)
@@ -163,7 +166,7 @@ def test_sql_conditional_denial_does_not_add_status_event(tmp_path):
 
 
 def test_sql_approval_persists_without_implicit_activation(tmp_path):
-    url,repo,svc,cid,owner,reviewer=setup_case(tmp_path)
+    url,repo,svc,cid,_owner,reviewer=setup_case(tmp_path)
     appr=condition(svc,cid,reviewer)
     assert appr.id==repo.approvals_for_case(cid)[-1].id
     assert repo.get_case(cid).status==CaseStatus.IN_REVIEW
@@ -175,7 +178,7 @@ def test_sql_approval_persists_without_implicit_activation(tmp_path):
 
 
 def test_sql_stale_snapshot_cannot_overwrite_newer_case_state(tmp_path):
-    _,repo,svc,cid,owner,reviewer=setup_case(tmp_path)
+    _,repo,_svc,cid,owner,_reviewer=setup_case(tmp_path)
     # Two readers get the same state/version. One commits a new event.
     stale=repo.get_case(cid)
     latest=repo.get_case(cid)
