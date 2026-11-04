@@ -28,7 +28,11 @@ from .models import (
     PermissionGrantVersion,
     utc_now,
 )
-from .repository import InMemoryVigilanceRepository
+from .repository import (
+    InMemoryVigilanceRepository,
+    InvalidStoredAuthorizationReceiptError,
+    StaleAuthorizationGrantError,
+)
 
 
 class PermissionTransitionError(ValueError):
@@ -372,7 +376,10 @@ class VigilancePermissionService:
             approval_request_id=request_id,
             approval_record_id=decision_id,
         )
-        stored = self.vigilance_repository.append_authorization_receipt(receipt)
+        try:
+            stored = self.vigilance_repository.append_authorization_receipt_if_current(receipt)
+        except StaleAuthorizationGrantError as exc:
+            raise StalePermissionError("Grant changed during authorization") from exc
         self.kernel_repository.append_evidence(
             EvidenceReference(
                 case_id=latest.case_id,
@@ -418,18 +425,24 @@ class VigilancePermissionService:
         ]
         if len(matches) != 1 or matches[0] != authorization:
             raise PermissionBoundaryError("Authorization does not match a stored receipt")
-        event = self._record_event(
-            latest,
-            PermissionEventType.ACTION_RECORDED,
-            recorded_by,
-            {
+        event = PermissionEvent(
+            case_id=latest.case_id,
+            grant_id=latest.grant_id,
+            event_type=PermissionEventType.ACTION_RECORDED,
+            actor_id=recorded_by,
+            details={
                 "authorization_receipt_id": str(authorization.id),
                 "authorization_receipt_hash": authorization.receipt_hash,
                 "execution_reference": execution_reference.strip(),
                 "note": "Vigilance records evidence but does not execute the action",
             },
         )
-        return event
+        try:
+            return self.vigilance_repository.append_action_event_if_current(authorization, event)
+        except StaleAuthorizationGrantError as exc:
+            raise StalePermissionError("Grant changed during action recording") from exc
+        except InvalidStoredAuthorizationReceiptError as exc:
+            raise PermissionBoundaryError("Authorization does not match a stored receipt") from exc
 
     def emergency_disable(
         self,
