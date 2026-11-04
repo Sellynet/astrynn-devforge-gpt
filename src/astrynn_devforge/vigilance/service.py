@@ -409,6 +409,15 @@ class VigilancePermissionService:
         latest = self.vigilance_repository.latest_version(authorization.grant_id)
         if latest.id != authorization.grant_version_id:
             raise StalePermissionError("Authorization belongs to an older grant version")
+        matches = [
+            receipt
+            for receipt in self.vigilance_repository.authorization_receipts_for_grant(
+                authorization.grant_id
+            )
+            if receipt.id == authorization.id
+        ]
+        if len(matches) != 1 or matches[0] != authorization:
+            raise PermissionBoundaryError("Authorization does not match a stored receipt")
         event = self._record_event(
             latest,
             PermissionEventType.ACTION_RECORDED,
