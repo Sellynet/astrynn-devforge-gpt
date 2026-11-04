@@ -177,6 +177,9 @@ class SQLAlchemyKernelRepository:
                 version=case.version, created_at=case.created_at,
                 updated_at=case.updated_at,
             ))
+            # Flush the parent before dependent events, but keep both in the
+            # same transaction so an event failure also rolls back the case.
+            session.flush()
             new_ids = set(supplied)
         else:
             # All formerly persisted events must remain represented; otherwise
